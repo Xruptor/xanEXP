@@ -1,7 +1,7 @@
 ## Interface: 30300
 ## Title: XanEXP
 ## Notes: A small window display current xp and other xp information
-## Author: Xanthos
+## Author: Xruptor
 ## Version: 1.4
 ## SavedVariablesPerCharacter: XanEXP_DB
 
