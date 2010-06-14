@@ -31,6 +31,9 @@ function f:PLAYER_LOGIN()
 	
 	SLASH_XANEXP1 = "/xanexp";
 	SlashCmdList["XANEXP"] = XANEXP_SlashCommand;
+	
+	local ver = GetAddOnMetadata("XanEXP","Version") or '1.0'
+	DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFF99CC33%s|r [v|cFFDF2B2B%s|r] Loaded", "XanEXP", ver or "1.0"))
 end
 
 function XANEXP_SlashCommand(cmd)
