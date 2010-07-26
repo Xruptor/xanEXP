@@ -15,7 +15,7 @@ function f:PLAYER_LOGIN()
 	if XanEXP_DB.bgShown == nil then XanEXP_DB.bgShown = 1 end
 	if XanEXP_DB.scale == nil then XanEXP_DB.scale = 1 end
 	
-	self:CreateEXPFrame()
+	self:CreateEXP_Frame()
 	self:RestoreLayout("XanEXP")
 
 	start, max, starttime = UnitXP("player"), UnitXPMax("player"), GetTime()
@@ -33,7 +33,7 @@ function f:PLAYER_LOGIN()
 	SlashCmdList["XANEXP"] = XANEXP_SlashCommand;
 	
 	local ver = GetAddOnMetadata("XanEXP","Version") or '1.0'
-	DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFF99CC33%s|r [v|cFFDF2B2B%s|r] Loaded", "XanEXP", ver or "1.0"))
+	DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFF99CC33%s|r [v|cFFDF2B2B%s|r] loaded:   /xanexp", "XanEXP", ver or "1.0"))
 end
 
 function XANEXP_SlashCommand(cmd)
@@ -46,7 +46,8 @@ function XANEXP_SlashCommand(cmd)
 			return true
 		elseif c and c:lower() == "reset" then
 			DEFAULT_CHAT_FRAME:AddMessage("XanEXP: Frame position has been reset!");
-			XanEXP:SetPoint("CENTER", UIParent, "CENTER", 0, 0);
+			XanEXP:ClearAllPoints()
+			XanEXP:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
 			return true
 		elseif c and c:lower() == "scale" then
 			if b then
@@ -67,7 +68,7 @@ function XANEXP_SlashCommand(cmd)
 	DEFAULT_CHAT_FRAME:AddMessage("/xanexp scale # - Set the scale of the XanEXP frame")
 end
 
-function f:CreateEXPFrame()
+function f:CreateEXP_Frame()
 
 	f:SetWidth(61)
 	f:SetHeight(27)

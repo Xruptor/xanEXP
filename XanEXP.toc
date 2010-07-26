@@ -2,7 +2,7 @@
 ## Title: XanEXP
 ## Notes: A small window display current xp and other xp information
 ## Author: Xruptor
-## Version: 1.4
+## Version: 1.5
 ## SavedVariablesPerCharacter: XanEXP_DB
 
 XanEXP.lua
