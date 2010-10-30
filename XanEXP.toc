@@ -1,8 +1,8 @@
-## Interface: 30300
+## Interface: 40000
 ## Title: XanEXP
 ## Notes: A small window display current xp and other xp information
 ## Author: Xruptor
-## Version: 1.5
+## Version: 1.6
 ## SavedVariablesPerCharacter: XanEXP_DB
 
 XanEXP.lua
