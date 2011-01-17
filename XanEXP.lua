@@ -5,7 +5,7 @@ if UnitLevel("player") >= 85 then return end
 
 local start, max, starttime, startlevel
 
-local f = CreateFrame("frame","XanEXP",UIParent)
+local f = CreateFrame("frame","xanEXP",UIParent)
 f:SetScript("OnEvent", function(self, event, ...) if self[event] then return self[event](self, event, ...) end end)
 
 ----------------------
@@ -19,7 +19,7 @@ function f:PLAYER_LOGIN()
 	if XanEXP_DB.scale == nil then XanEXP_DB.scale = 1 end
 	
 	self:CreateEXP_Frame()
-	self:RestoreLayout("XanEXP")
+	self:RestoreLayout("xanEXP")
 
 	start, max, starttime = UnitXP("player"), UnitXPMax("player"), GetTime()
 	startlevel = UnitLevel("player") + start/max
@@ -33,42 +33,42 @@ function f:PLAYER_LOGIN()
 	self.PLAYER_LOGIN = nil
 	
 	SLASH_XANEXP1 = "/xanexp";
-	SlashCmdList["XANEXP"] = XANEXP_SlashCommand;
+	SlashCmdList["XANEXP"] = xanEXP_SlashCommand;
 	
-	local ver = GetAddOnMetadata("XanEXP","Version") or '1.0'
-	DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFF99CC33%s|r [v|cFFDF2B2B%s|r] loaded:   /xanexp", "XanEXP", ver or "1.0"))
+	local ver = GetAddOnMetadata("xanEXP","Version") or '1.0'
+	DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFF99CC33%s|r [v|cFFDF2B2B%s|r] loaded:   /xanexp", "xanEXP", ver or "1.0"))
 end
 
-function XANEXP_SlashCommand(cmd)
+function xanEXP_SlashCommand(cmd)
 
 	local a,b,c=strfind(cmd, "(%S+)"); --contiguous string of non-space characters
 	
 	if a then
 		if c and c:lower() == "bg" then
-			XanEXP:BackgroundToggle()
+			xanEXP:BackgroundToggle()
 			return true
 		elseif c and c:lower() == "reset" then
-			DEFAULT_CHAT_FRAME:AddMessage("XanEXP: Frame position has been reset!");
-			XanEXP:ClearAllPoints()
-			XanEXP:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+			DEFAULT_CHAT_FRAME:AddMessage("xanEXP: Frame position has been reset!");
+			xanEXP:ClearAllPoints()
+			xanEXP:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
 			return true
 		elseif c and c:lower() == "scale" then
 			if b then
 				local scalenum = strsub(cmd, b+2)
 				if scalenum and scalenum ~= "" and tonumber(scalenum) then
 					XanEXP_DB.scale = tonumber(scalenum)
-					XanEXP:SetScale(tonumber(scalenum))
-					DEFAULT_CHAT_FRAME:AddMessage("XanEXP: scale has been set to ["..tonumber(scalenum).."]")
+					xanEXP:SetScale(tonumber(scalenum))
+					DEFAULT_CHAT_FRAME:AddMessage("xanEXP: scale has been set to ["..tonumber(scalenum).."]")
 					return true
 				end
 			end
 		end
 	end
 
-	DEFAULT_CHAT_FRAME:AddMessage("XanEXP");
+	DEFAULT_CHAT_FRAME:AddMessage("xanEXP");
 	DEFAULT_CHAT_FRAME:AddMessage("/xanexp reset - resets the frame position");
 	DEFAULT_CHAT_FRAME:AddMessage("/xanexp bg - toggles the background on/off");
-	DEFAULT_CHAT_FRAME:AddMessage("/xanexp scale # - Set the scale of the XanEXP frame")
+	DEFAULT_CHAT_FRAME:AddMessage("/xanexp scale # - Set the scale of the xanEXP frame")
 end
 
 function f:CreateEXP_Frame()
@@ -96,7 +96,7 @@ function f:CreateEXP_Frame()
 	f:EnableMouse(true);
 	
 	local t = f:CreateTexture("$parentIcon", "ARTWORK")
-	t:SetTexture("Interface\\AddOns\\XanEXP\\icon")
+	t:SetTexture("Interface\\AddOns\\xanEXP\\icon")
 	t:SetWidth(16)
 	t:SetHeight(16)
 	t:SetPoint("TOPLEFT",5,-6)
@@ -132,7 +132,7 @@ function f:CreateEXP_Frame()
 		GameTooltip:SetPoint(self:GetTipAnchor(self))
 		GameTooltip:ClearLines()
 
-		GameTooltip:AddLine("XanEXP")
+		GameTooltip:AddLine("xanEXP")
 
 		local cur = UnitXP("player")
 		local maxXP = UnitXPMax("player")
@@ -219,13 +219,13 @@ function f:BackgroundToggle()
 	
 	if XanEXP_DB.bgShown == 0 then
 		XanEXP_DB.bgShown = 1;
-		DEFAULT_CHAT_FRAME:AddMessage("XanEXP: Background Shown");
+		DEFAULT_CHAT_FRAME:AddMessage("xanEXP: Background Shown");
 	elseif XanEXP_DB.bgShown == 1 then
 		XanEXP_DB.bgShown = 0;
-		DEFAULT_CHAT_FRAME:AddMessage("XanEXP: Background Hidden");
+		DEFAULT_CHAT_FRAME:AddMessage("xanEXP: Background Hidden");
 	else
 		XanEXP_DB.bgShown = 1
-		DEFAULT_CHAT_FRAME:AddMessage("XanEXP: Background Shown");
+		DEFAULT_CHAT_FRAME:AddMessage("xanEXP: Background Shown");
 	end
 
 	--now change background
@@ -255,8 +255,8 @@ function f:PLAYER_XP_UPDATE()
 	local remainXP = maxXP - (currentXP + restXP)
 	local toLevelXPPercent = math.floor((maxXP - currentXP) / maxXP * 100)
 	
-	--getglobal("XanEXPText"):SetText(string.format("%d%%", currentXP/maxXP*100).." TNL: "..toLevelXPPercent.."%")
-	getglobal("XanEXPText"):SetText(string.format("%d%%", currentXP/maxXP*100))
+	--getglobal("xanEXPText"):SetText(string.format("%d%%", currentXP/maxXP*100).." TNL: "..toLevelXPPercent.."%")
+	getglobal("xanEXPText"):SetText(string.format("%d%%", currentXP/maxXP*100))
 end
 
 function f:PLAYER_LEVEL_UP()
