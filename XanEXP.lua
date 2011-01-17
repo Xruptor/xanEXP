@@ -17,6 +17,11 @@ function f:PLAYER_LOGIN()
 	if not XanEXP_DB then XanEXP_DB = {} end
 	if XanEXP_DB.bgShown == nil then XanEXP_DB.bgShown = 1 end
 	if XanEXP_DB.scale == nil then XanEXP_DB.scale = 1 end
+	--check for old db
+	if XanEXP_DB["XanEXP"] then
+		XanEXP_DB["xanEXP"] = XanEXP_DB["XanEXP"]
+		XanEXP_DB["XanEXP"] = nil
+	end
 	
 	self:CreateEXP_Frame()
 	self:RestoreLayout("xanEXP")
