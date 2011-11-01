@@ -34,14 +34,14 @@ function f:PLAYER_LOGIN()
 
 	self:PLAYER_XP_UPDATE()
 
-	self:UnregisterEvent("PLAYER_LOGIN")
-	self.PLAYER_LOGIN = nil
-	
 	SLASH_XANEXP1 = "/xanexp";
 	SlashCmdList["XANEXP"] = xanEXP_SlashCommand;
 	
 	local ver = GetAddOnMetadata("xanEXP","Version") or '1.0'
 	DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFF99CC33%s|r [v|cFFDF2B2B%s|r] loaded:   /xanexp", "xanEXP", ver or "1.0"))
+	
+	self:UnregisterEvent("PLAYER_LOGIN")
+	self.PLAYER_LOGIN = nil
 end
 
 function xanEXP_SlashCommand(cmd)
