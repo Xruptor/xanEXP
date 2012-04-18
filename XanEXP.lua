@@ -17,12 +17,7 @@ function f:PLAYER_LOGIN()
 	if not XanEXP_DB then XanEXP_DB = {} end
 	if XanEXP_DB.bgShown == nil then XanEXP_DB.bgShown = 1 end
 	if XanEXP_DB.scale == nil then XanEXP_DB.scale = 1 end
-	--check for old db
-	if XanEXP_DB["XanEXP"] then
-		XanEXP_DB["xanEXP"] = XanEXP_DB["XanEXP"]
-		XanEXP_DB["XanEXP"] = nil
-	end
-	
+
 	self:CreateEXP_Frame()
 	self:RestoreLayout("xanEXP")
 
@@ -160,63 +155,52 @@ function f:CreateEXP_Frame()
 end
 
 function f:SaveLayout(frame)
-
+	if type(frame) ~= "string" then return end
+	if not _G[frame] then return end
 	if not XanEXP_DB then XanEXP_DB = {} end
+	
+	local opt = XanEXP_DB[frame] or nil
 
-	local opt = XanEXP_DB[frame] or nil;
-
-	if opt == nil then
+	if not opt then
 		XanEXP_DB[frame] = {
 			["point"] = "CENTER",
 			["relativePoint"] = "CENTER",
-			["PosX"] = 0,
-			["PosY"] = 0,
+			["xOfs"] = 0,
+			["yOfs"] = 0,
 		}
-		opt = XanEXP_DB[frame];
+		opt = XanEXP_DB[frame]
+		return
 	end
 
-	local f = getglobal(frame);
-	local scale = f:GetEffectiveScale();
-	opt.PosX = f:GetLeft() * scale;
-	opt.PosY = f:GetTop() * scale;
-
+	local point, relativeTo, relativePoint, xOfs, yOfs = _G[frame]:GetPoint()
+	opt.point = point
+	opt.relativePoint = relativePoint
+	opt.xOfs = xOfs
+	opt.yOfs = yOfs
 end
 
 function f:RestoreLayout(frame)
+	if type(frame) ~= "string" then return end
+	if not _G[frame] then return end
+	if not XanEXP_DB then XanEXP_DB = {} end
 
-	if not XanEXP_DB then XanEXP_DB = {} end	
+	local opt = XanEXP_DB[frame] or nil
 
-	local f = getglobal(frame);
-	local opt = XanEXP_DB[frame] or nil;
-
-	if opt == nil then
+	if not opt then
 		XanEXP_DB[frame] = {
 			["point"] = "CENTER",
 			["relativePoint"] = "CENTER",
-			["PosX"] = 0,
-			["PosY"] = 0,
+			["xOfs"] = 0,
+			["yOfs"] = 0,
 		}
-		opt = XanEXP_DB[frame];
+		opt = XanEXP_DB[frame]
 	end
 
-	local x = opt.PosX;
-	local y = opt.PosY;
-	local s = f:GetEffectiveScale();
-
-	if (not x or not y) or (x==0 and y==0) then
-		f:ClearAllPoints();
-		f:SetPoint("CENTER", UIParent, "CENTER", 0, 0);
-		return 
-	end
-
-	--calculate the scale
-	x,y = x/s,y/s;
-
-	--set the location
-	f:ClearAllPoints();
-	f:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x, y);
-
+	_G[frame]:ClearAllPoints()
+	_G[frame]:SetPoint(opt.point, UIParent, opt.relativePoint, opt.xOfs, opt.yOfs)
 end
+
+
 
 function f:BackgroundToggle()
 	if not XanEXP_DB then XanEXP_DB = {} end
