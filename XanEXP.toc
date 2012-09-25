@@ -1,8 +1,8 @@
-## Interface: 40300
+## Interface: 50001
 ## Title: xanEXP
 ## Notes: A small window display current xp and other xp information
 ## Author: Xruptor
-## Version: 2.2
+## Version: 2.3
 ## SavedVariablesPerCharacter: XanEXP_DB
 
 xanEXP.lua
