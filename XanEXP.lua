@@ -1,8 +1,5 @@
 --Inspired by Author Tekkub and his mod PicoEXP
 
---don't load the addon for maxed leveled characters
-if UnitLevel("player") >= 85 then return end
-
 local start, max, starttime, startlevel
 
 local f = CreateFrame("frame","xanEXP",UIParent)
