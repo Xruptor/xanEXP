@@ -68,6 +68,36 @@ function xanEXP_SlashCommand(cmd)
 	DEFAULT_CHAT_FRAME:AddMessage("/xanexp scale # - Set the scale of the xanEXP frame")
 end
 
+local function FormatTime(sTime)
+	if type(sTime) == "number" and sTime > 0 then
+        local day = floor(sTime / 86400)
+		local hour = floor((sTime - (day * 86400)) / 3600)
+		local minute = floor((sTime - (day * 86400) - (hour * 3600)) / 60)
+		local second = floor(mod(sTime, 60))
+		
+		if day < 0 then
+			return "Waiting..."
+		else
+            local sString = ""
+            if day > 0 then
+               sString = day .. "d " 
+            end
+            if hour > 0 or sString ~= "" then
+               sString = sString .. hour .. "h " 
+            end
+            if minute > 0 or sString ~= "" then
+               sString = sString .. minute .. "m " 
+            end
+            if second > 0 or sString ~= "" then
+               sString = sString .. second .. "s" 
+            end
+            return sString
+		end
+	else
+		return "Waiting..."
+	end	
+end
+
 function f:CreateEXP_Frame()
 
 	f:SetWidth(61)
@@ -137,11 +167,26 @@ function f:CreateEXP_Frame()
 		local remainXP = maxXP - (cur + restXP)
 		local toLevelXPPercent = math.floor((maxXP - cur) / maxXP * 100)
 		
+        local sessionTime = GetTime() - starttime
+		local xpGainedSession = (cur - start)
+        local xpPerSecond = xpGainedSession / sessionTime 
+		local xpPerMinute = ceil(xpPerSecond * 60)
+        local xpPerHour = ceil(xpPerSecond * 3600)
+        local timeToLevel
+		if xpPerSecond <= 0 then
+			timeToLevel = "None"
+		else
+			timeToLevel = (maxXP - cur) / xpPerSecond
+		end
 		GameTooltip:AddDoubleLine("EXP:", cur.."/"..max, nil,nil,nil, 1,1,1)
 		GameTooltip:AddDoubleLine("Rest:", string.format("%d%%", (GetXPExhaustion() or 0)/max*100), nil,nil,nil, 1,1,1)
 		GameTooltip:AddDoubleLine("TNL:", maxXP-cur..(" ("..toLevelXPPercent.."%)"), nil,nil,nil, 1,1,1)
-		GameTooltip:AddLine(string.format("%.1f hours played this session", (GetTime()-starttime)/3600), 1,1,1)
-		GameTooltip:AddLine((cur - start).." EXP gained this session", 1,1,1)
+		GameTooltip:AddDoubleLine("XP/Sec:", xpPerSecond, nil,nil,nil, 1,1,1)
+		GameTooltip:AddDoubleLine("XP/Minute:", xpPerMinute, nil,nil,nil, 1,1,1)
+		GameTooltip:AddDoubleLine("XP/Hour:", xpPerHour, nil,nil,nil, 1,1,1)
+		GameTooltip:AddDoubleLine("Time To Level:", FormatTime(timeToLevel), nil,nil,nil, 1,1,1)
+		GameTooltip:AddLine(string.format("%.1f hours played this session", sessionTime/3600), 1,1,1)
+		GameTooltip:AddLine(xpGainedSession.." EXP gained this session", 1,1,1)
 		GameTooltip:AddLine(string.format("%.1f levels gained this session", UnitLevel("player") + cur/max - startlevel), 1,1,1)
 
 		GameTooltip:Show()
