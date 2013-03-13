@@ -169,7 +169,7 @@ function f:CreateEXP_Frame()
 		
         local sessionTime = GetTime() - starttime
 		local xpGainedSession = (cur - start)
-        local xpPerSecond = xpGainedSession / sessionTime 
+        local xpPerSecond = ceil(xpGainedSession / sessionTime)
 		local xpPerMinute = ceil(xpPerSecond * 60)
         local xpPerHour = ceil(xpPerSecond * 3600)
         local timeToLevel
@@ -185,9 +185,9 @@ function f:CreateEXP_Frame()
 		GameTooltip:AddDoubleLine("XP/Minute:", xpPerMinute, nil,nil,nil, 1,1,1)
 		GameTooltip:AddDoubleLine("XP/Hour:", xpPerHour, nil,nil,nil, 1,1,1)
 		GameTooltip:AddDoubleLine("Time To Level:", FormatTime(timeToLevel), nil,nil,nil, 1,1,1)
-		GameTooltip:AddLine(string.format("%.1f hours played this session", sessionTime/3600), 1,1,1)
+		GameTooltip:AddLine(string.format("%s hours played this session", ceil(sessionTime/3600)), 1,1,1)
 		GameTooltip:AddLine(xpGainedSession.." EXP gained this session", 1,1,1)
-		GameTooltip:AddLine(string.format("%.1f levels gained this session", UnitLevel("player") + cur/max - startlevel), 1,1,1)
+		GameTooltip:AddLine(string.format("%s levels gained this session", ceil(UnitLevel("player") + cur/max - startlevel)), 1,1,1)
 
 		GameTooltip:Show()
 	end)
