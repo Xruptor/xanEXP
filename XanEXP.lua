@@ -5,6 +5,11 @@ local start, max, starttime, startlevel
 local f = CreateFrame("frame","xanEXP",UIParent)
 f:SetScript("OnEvent", function(self, event, ...) if self[event] then return self[event](self, event, ...) end end)
 
+local debugf = tekDebug and tekDebug:GetFrame("xanEXP")
+local function Debug(...)
+    if debugf then debugf:AddMessage(string.join(", ", tostringall(...))) end
+end
+
 ----------------------
 --      Enable      --
 ----------------------

@@ -1,8 +1,9 @@
-## Interface: 60000
+## Interface: 70000
 ## Title: xanEXP
 ## Notes: A small window display current xp and other xp information
 ## Author: Xruptor
-## Version: 2.9
+## Version: 3.0
+## OptionalDeps: tekDebug
 ## SavedVariablesPerCharacter: XanEXP_DB
 
 xanEXP.lua
