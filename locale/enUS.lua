@@ -1,5 +1,6 @@
+local ADDON_NAME, addon = ...
 
-local L = LibStub("AceLocale-3.0"):NewLocale("xanEXP", "enUS", true)
+local L = LibStub("AceLocale-3.0"):NewLocale(ADDON_NAME, "enUS", true)
 if not L then return end
 
 --for non-english fonts
@@ -15,9 +16,8 @@ L.SlashBGOff = "xanEXP: Background is now [|cFF99CC33HIDDEN|r]"
 L.SlashBGInfo = "Show the window background."
 
 L.SlashReset = "reset"
-L.SlashResetOn = "xanTooltipHoudini: Quest toolips are now [|cFF99CC33ON|r]"
-L.SlashResetOff = "xanTooltipHoudini: Quest toolips are now [|cFF99CC33OFF|r]"
-L.SlashResetInfo = "Allow quest tooltips to be displayed during combat."
+L.SlashResetInfo = "Reset frame position."
+L.SlashResetAlert = "xanEXP: Frame position has been reset!"
 
 L.SlashScale = "scale"
 L.SlashScaleOn = "xanTooltipHoudini: Quest toolips are now [|cFF99CC33ON|r]"

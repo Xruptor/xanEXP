@@ -6,13 +6,13 @@ if not _G[ADDON_NAME] then
 end
 addon = _G[ADDON_NAME]
 
-local L = LibStub("AceLocale-3.0"):GetLocale("xanEXP")
+local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
 
 local start, max, starttime, startlevel
 
 addon:SetScript("OnEvent", function(self, event, ...) if self[event] then return self[event](self, event, ...) end end)
 
-local debugf = tekDebug and tekDebug:GetFrame("xanEXP")
+local debugf = tekDebug and tekDebug:GetFrame(ADDON_NAME)
 local function Debug(...)
     if debugf then debugf:AddMessage(string.join(", ", tostringall(...))) end
 end
@@ -28,7 +28,7 @@ function addon:PLAYER_LOGIN()
 	if XanEXP_DB.scale == nil then XanEXP_DB.scale = 1 end
 
 	self:CreateEXP_Frame()
-	self:RestoreLayout("xanEXP")
+	self:RestoreLayout(ADDON_NAME)
 
 	start, max, starttime = UnitXP("player"), UnitXPMax("player"), GetTime()
 	startlevel = UnitLevel("player") + start/max
@@ -41,8 +41,8 @@ function addon:PLAYER_LOGIN()
 	SLASH_XANEXP1 = "/xanexp";
 	SlashCmdList["XANEXP"] = xanEXP_SlashCommand;
 	
-	local ver = GetAddOnMetadata("xanEXP","Version") or '1.0'
-	DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFF99CC33%s|r [v|cFF20ff20%s|r] loaded:   /xanexp", "xanEXP", ver or "1.0"))
+	local ver = GetAddOnMetadata(ADDON_NAME,"Version") or '1.0'
+	DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFF99CC33%s|r [v|cFF20ff20%s|r] loaded:   /xanexp", ADDON_NAME, ver or "1.0"))
 	
 	self:UnregisterEvent("PLAYER_LOGIN")
 	self.PLAYER_LOGIN = nil
@@ -54,12 +54,10 @@ function xanEXP_SlashCommand(cmd)
 	
 	if a then
 		if c and c:lower() == "bg" then
-			addon.aboutPanel.btnBG.func()
+			addon.aboutPanel.btnBG.func(true)
 			return true
 		elseif c and c:lower() == "reset" then
-			DEFAULT_CHAT_FRAME:AddMessage("xanEXP: Frame position has been reset!");
-			xanEXP:ClearAllPoints()
-			xanEXP:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+			addon.aboutPanel.btnReset.func()
 			return true
 		elseif c and c:lower() == "scale" then
 			if b then
@@ -74,9 +72,9 @@ function xanEXP_SlashCommand(cmd)
 		end
 	end
 
-	DEFAULT_CHAT_FRAME:AddMessage("xanEXP");
-	DEFAULT_CHAT_FRAME:AddMessage("/xanexp reset - resets the frame position");
-	DEFAULT_CHAT_FRAME:AddMessage("/xanexp bg - toggles the background on/off");
+	DEFAULT_CHAT_FRAME:AddMessage(ADDON_NAME, 64/255, 224/255, 208/255);
+	DEFAULT_CHAT_FRAME:AddMessage("/xanexp "..L.SlashReset.." - "..L.SlashResetInfo);
+	DEFAULT_CHAT_FRAME:AddMessage("/xanexp "..L.SlashBG.." - "..L.SlashBGInfo);
 	DEFAULT_CHAT_FRAME:AddMessage("/xanexp scale # - Set the scale of the xanEXP frame")
 end
 
@@ -157,7 +155,7 @@ function addon:CreateEXP_Frame()
 			self.isMoving = nil
 			self:StopMovingOrSizing()
 
-			addon:SaveLayout("xanEXP")
+			addon:SaveLayout(ADDON_NAME)
 
 		end
 	end)
@@ -171,7 +169,7 @@ function addon:CreateEXP_Frame()
 		GameTooltip:SetPoint(self:GetTipAnchor(self))
 		GameTooltip:ClearLines()
 
-		GameTooltip:AddLine("xanEXP")
+		GameTooltip:AddLine(ADDON_NAME)
 		GameTooltip:AddLine(L.TooltipDragInfo, 64/255, 224/255, 208/255)
 		GameTooltip:AddLine(" ")
 		
