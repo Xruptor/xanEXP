@@ -1,11 +1,14 @@
 local ADDON_NAME, addon = ...
-if not _G[ADDON_NAME] then _G[ADDON_NAME] = addon end
+if not _G[ADDON_NAME] then
+	_G[ADDON_NAME] = CreateFrame("Frame", ADDON_NAME, UIParent)
+end
+addon = _G[ADDON_NAME]
 
 addon.configEvent = CreateFrame("frame", ADDON_NAME.."_config_eventFrame",UIParent)
 local configEvent = addon.configEvent
 configEvent:SetScript("OnEvent", function(self, event, ...) if self[event] then return self[event](self, event, ...) end end)
 
-local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
+local L = LibStub("AceLocale-3.0"):GetLocale("xanEXP")
 local chkBoxIndex = 1
 
 function createCheckbutton(parentFrame, displayText)

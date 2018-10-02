@@ -1,17 +1,18 @@
 --Inspired by Author Tekkub and his mod PicoEXP
 
 local ADDON_NAME, addon = ...
-if not _G[ADDON_NAME] then _G[ADDON_NAME] = addon end
+if not _G[ADDON_NAME] then
+	_G[ADDON_NAME] = CreateFrame("Frame", ADDON_NAME, UIParent)
+end
+addon = _G[ADDON_NAME]
 
-addon.addonFrame = CreateFrame("frame", ADDON_NAME, UIParent)
-local f = addon.addonFrame
-local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
+local L = LibStub("AceLocale-3.0"):GetLocale("xanEXP")
 
 local start, max, starttime, startlevel
 
-f:SetScript("OnEvent", function(self, event, ...) if self[event] then return self[event](self, event, ...) end end)
+addon:SetScript("OnEvent", function(self, event, ...) if self[event] then return self[event](self, event, ...) end end)
 
-local debugf = tekDebug and tekDebug:GetFrame(ADDON_NAME)
+local debugf = tekDebug and tekDebug:GetFrame("xanEXP")
 local function Debug(...)
     if debugf then debugf:AddMessage(string.join(", ", tostringall(...))) end
 end
@@ -20,14 +21,14 @@ end
 --      Enable      --
 ----------------------
 
-function f:PLAYER_LOGIN()
+function addon:PLAYER_LOGIN()
 
 	if not XanEXP_DB then XanEXP_DB = {} end
 	if XanEXP_DB.bgShown == nil then XanEXP_DB.bgShown = true end
 	if XanEXP_DB.scale == nil then XanEXP_DB.scale = 1 end
 
 	self:CreateEXP_Frame()
-	self:RestoreLayout(ADDON_NAME)
+	self:RestoreLayout("xanEXP")
 
 	start, max, starttime = UnitXP("player"), UnitXPMax("player"), GetTime()
 	startlevel = UnitLevel("player") + start/max
@@ -109,62 +110,62 @@ local function FormatTime(sTime)
 	end	
 end
 
-function f:CreateEXP_Frame()
+function addon:CreateEXP_Frame()
 
-	f:SetWidth(61)
-	f:SetHeight(27)
-	f:SetMovable(true)
-	f:SetClampedToScreen(true)
+	addon:SetWidth(61)
+	addon:SetHeight(27)
+	addon:SetMovable(true)
+	addon:SetClampedToScreen(true)
 	
-	f:SetScale(XanEXP_DB.scale)
+	addon:SetScale(XanEXP_DB.scale)
 	
 	if XanEXP_DB.bgShown then
-		f:SetBackdrop( {
+		addon:SetBackdrop( {
 			bgFile = "Interface\\TutorialFrame\\TutorialFrameBackground";
 			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border";
 			tile = true; tileSize = 32; edgeSize = 16;
 			insets = { left = 5; right = 5; top = 5; bottom = 5; };
 		} );
-		f:SetBackdropBorderColor(0.5, 0.5, 0.5);
-		f:SetBackdropColor(0.5, 0.5, 0.5, 0.6)
+		addon:SetBackdropBorderColor(0.5, 0.5, 0.5);
+		addon:SetBackdropColor(0.5, 0.5, 0.5, 0.6)
 	else
-		f:SetBackdrop(nil)
+		addon:SetBackdrop(nil)
 	end
 	
-	f:EnableMouse(true);
+	addon:EnableMouse(true);
 	
-	local t = f:CreateTexture("$parentIcon", "ARTWORK")
+	local t = addon:CreateTexture("$parentIcon", "ARTWORK")
 	t:SetTexture("Interface\\AddOns\\xanEXP\\icon")
 	t:SetWidth(16)
 	t:SetHeight(16)
 	t:SetPoint("TOPLEFT",5,-6)
 
-	local g = f:CreateFontString(ADDON_NAME.."Text", "ARTWORK", "GameFontNormalSmall")
+	local g = addon:CreateFontString("xanEXPText", "ARTWORK", "GameFontNormalSmall")
 	g:SetJustifyH("LEFT")
 	g:SetPoint("CENTER",8,0)
 	g:SetText("?")
 
-	f:SetScript("OnMouseDown",function()
+	addon:SetScript("OnMouseDown",function()
 		if (IsShiftKeyDown()) then
 			self.isMoving = true
 			self:StartMoving();
 	 	end
 	end)
-	f:SetScript("OnMouseUp",function()
+	addon:SetScript("OnMouseUp",function()
 		if( self.isMoving ) then
 
 			self.isMoving = nil
 			self:StopMovingOrSizing()
 
-			f:SaveLayout(ADDON_NAME)
+			addon:SaveLayout("xanEXP")
 
 		end
 	end)
-	f:SetScript("OnLeave",function()
+	addon:SetScript("OnLeave",function()
 		GameTooltip:Hide()
 	end)
 
-	f:SetScript("OnEnter",function()
+	addon:SetScript("OnEnter",function()
 	
 		GameTooltip:SetOwner(self, "ANCHOR_NONE")
 		GameTooltip:SetPoint(self:GetTipAnchor(self))
@@ -206,10 +207,10 @@ function f:CreateEXP_Frame()
 	end)
 	
 	
-	f:Show();
+	addon:Show();
 end
 
-function f:SaveLayout(frame)
+function addon:SaveLayout(frame)
 	if type(frame) ~= "string" then return end
 	if not _G[frame] then return end
 	if not XanEXP_DB then XanEXP_DB = {} end
@@ -234,7 +235,7 @@ function f:SaveLayout(frame)
 	opt.yOfs = yOfs
 end
 
-function f:RestoreLayout(frame)
+function addon:RestoreLayout(frame)
 	if type(frame) ~= "string" then return end
 	if not _G[frame] then return end
 	if not XanEXP_DB then XanEXP_DB = {} end
@@ -255,20 +256,18 @@ function f:RestoreLayout(frame)
 	_G[frame]:SetPoint(opt.point, UIParent, opt.relativePoint, opt.xOfs, opt.yOfs)
 end
 
-
-
-function f:BackgroundToggle()
+function addon:BackgroundToggle()
 	if XanEXP_DB.bgShown then
-		f:SetBackdrop( {
+		addon:SetBackdrop( {
 			bgFile = "Interface\\TutorialFrame\\TutorialFrameBackground";
 			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border";
 			tile = true; tileSize = 32; edgeSize = 16;
 			insets = { left = 5; right = 5; top = 5; bottom = 5; };
 		} );
-		f:SetBackdropBorderColor(0.5, 0.5, 0.5);
-		f:SetBackdropColor(0.5, 0.5, 0.5, 0.6)
+		addon:SetBackdropBorderColor(0.5, 0.5, 0.5);
+		addon:SetBackdropColor(0.5, 0.5, 0.5, 0.6)
 	else
-		f:SetBackdrop(nil)
+		addon:SetBackdrop(nil)
 	end
 end
 
@@ -276,7 +275,7 @@ end
 --      Event Handlers      --
 ------------------------------
 
-function f:PLAYER_XP_UPDATE()
+function addon:PLAYER_XP_UPDATE()
 	local currentXP = UnitXP("player")
 	local maxXP = UnitXPMax("player")
 	local restXP = GetXPExhaustion() or 0
@@ -284,10 +283,10 @@ function f:PLAYER_XP_UPDATE()
 	local toLevelXPPercent = math.floor((maxXP - currentXP) / maxXP * 100)
 	
 	--getglobal("xanEXPText"):SetText(string.format("%d%%", currentXP/maxXP*100).." TNL: "..toLevelXPPercent.."%")
-	getglobal(ADDON_NAME.."Text"):SetText(string.format("%d%%", currentXP/maxXP*100))
+	getglobal("xanEXPText"):SetText(string.format("%d%%", currentXP/maxXP*100))
 end
 
-function f:PLAYER_LEVEL_UP()
+function addon:PLAYER_LEVEL_UP()
 	start = start - max
 	max = UnitXPMax("player")
 end
@@ -296,7 +295,7 @@ end
 --      Tooltip!      --
 ------------------------
 
-function f:GetTipAnchor(frame)
+function addon:GetTipAnchor(frame)
 	local x,y = frame:GetCenter()
 	if not x or not y then return "TOPLEFT", "BOTTOMLEFT" end
 	local hhalf = (x > UIParent:GetWidth()*2/3) and "RIGHT" or (x < UIParent:GetWidth()/3) and "LEFT" or ""
@@ -304,4 +303,4 @@ function f:GetTipAnchor(frame)
 	return vhalf..hhalf, frame, (vhalf == "TOP" and "BOTTOM" or "TOP")..hhalf
 end
 
-if IsLoggedIn() then f:PLAYER_LOGIN() else f:RegisterEvent("PLAYER_LOGIN") end
+if IsLoggedIn() then addon:PLAYER_LOGIN() else addon:RegisterEvent("PLAYER_LOGIN") end
