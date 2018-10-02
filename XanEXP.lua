@@ -1,11 +1,17 @@
 --Inspired by Author Tekkub and his mod PicoEXP
 
+local ADDON_NAME, addon = ...
+if not _G[ADDON_NAME] then _G[ADDON_NAME] = addon end
+
+addon.addonFrame = CreateFrame("frame", ADDON_NAME, UIParent)
+local f = addon.addonFrame
+local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
+
 local start, max, starttime, startlevel
 
-local f = CreateFrame("frame","xanEXP",UIParent)
 f:SetScript("OnEvent", function(self, event, ...) if self[event] then return self[event](self, event, ...) end end)
 
-local debugf = tekDebug and tekDebug:GetFrame("xanEXP")
+local debugf = tekDebug and tekDebug:GetFrame(ADDON_NAME)
 local function Debug(...)
     if debugf then debugf:AddMessage(string.join(", ", tostringall(...))) end
 end
@@ -17,11 +23,11 @@ end
 function f:PLAYER_LOGIN()
 
 	if not XanEXP_DB then XanEXP_DB = {} end
-	if XanEXP_DB.bgShown == nil then XanEXP_DB.bgShown = 1 end
+	if XanEXP_DB.bgShown == nil then XanEXP_DB.bgShown = true end
 	if XanEXP_DB.scale == nil then XanEXP_DB.scale = 1 end
 
 	self:CreateEXP_Frame()
-	self:RestoreLayout("xanEXP")
+	self:RestoreLayout(ADDON_NAME)
 
 	start, max, starttime = UnitXP("player"), UnitXPMax("player"), GetTime()
 	startlevel = UnitLevel("player") + start/max
@@ -35,7 +41,7 @@ function f:PLAYER_LOGIN()
 	SlashCmdList["XANEXP"] = xanEXP_SlashCommand;
 	
 	local ver = GetAddOnMetadata("xanEXP","Version") or '1.0'
-	DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFF99CC33%s|r [v|cFFDF2B2B%s|r] loaded:   /xanexp", "xanEXP", ver or "1.0"))
+	DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFF99CC33%s|r [v|cFF20ff20%s|r] loaded:   /xanexp", "xanEXP", ver or "1.0"))
 	
 	self:UnregisterEvent("PLAYER_LOGIN")
 	self.PLAYER_LOGIN = nil
@@ -47,7 +53,7 @@ function xanEXP_SlashCommand(cmd)
 	
 	if a then
 		if c and c:lower() == "bg" then
-			xanEXP:BackgroundToggle()
+			addon.aboutPanel.btnBG.func()
 			return true
 		elseif c and c:lower() == "reset" then
 			DEFAULT_CHAT_FRAME:AddMessage("xanEXP: Frame position has been reset!");
@@ -81,25 +87,25 @@ local function FormatTime(sTime)
 		local second = floor(mod(sTime, 60))
 		
 		if day < 0 then
-			return "Waiting..."
+			return L.Waiting
 		else
             local sString = ""
             if day > 0 then
-               sString = day .. "d " 
+               sString = day..L.FormatDay.." " 
             end
             if hour > 0 or sString ~= "" then
-               sString = sString .. hour .. "h " 
+               sString = sString..hour..L.FormatHour.." " 
             end
             if minute > 0 or sString ~= "" then
-               sString = sString .. minute .. "m " 
+               sString = sString..minute..L.FormatMinute.." " 
             end
             if second > 0 or sString ~= "" then
-               sString = sString .. second .. "s" 
+               sString = sString..second..L.FormatSecond 
             end
             return sString
 		end
 	else
-		return "Waiting..."
+		return L.Waiting
 	end	
 end
 
@@ -112,7 +118,7 @@ function f:CreateEXP_Frame()
 	
 	f:SetScale(XanEXP_DB.scale)
 	
-	if XanEXP_DB.bgShown == 1 then
+	if XanEXP_DB.bgShown then
 		f:SetBackdrop( {
 			bgFile = "Interface\\TutorialFrame\\TutorialFrameBackground";
 			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border";
@@ -133,10 +139,10 @@ function f:CreateEXP_Frame()
 	t:SetHeight(16)
 	t:SetPoint("TOPLEFT",5,-6)
 
-	local g = f:CreateFontString("$parentText", "ARTWORK", "GameFontNormalSmall")
+	local g = f:CreateFontString(ADDON_NAME.."Text", "ARTWORK", "GameFontNormalSmall")
 	g:SetJustifyH("LEFT")
 	g:SetPoint("CENTER",8,0)
-	g:SetText("lala")
+	g:SetText("?")
 
 	f:SetScript("OnMouseDown",function()
 		if (IsShiftKeyDown()) then
@@ -150,7 +156,7 @@ function f:CreateEXP_Frame()
 			self.isMoving = nil
 			self:StopMovingOrSizing()
 
-			f:SaveLayout(self:GetName());
+			f:SaveLayout(ADDON_NAME)
 
 		end
 	end)
@@ -165,7 +171,9 @@ function f:CreateEXP_Frame()
 		GameTooltip:ClearLines()
 
 		GameTooltip:AddLine("xanEXP")
-
+		GameTooltip:AddLine(L.TooltipDragInfo, 64/255, 224/255, 208/255)
+		GameTooltip:AddLine(" ")
+		
 		local cur = UnitXP("player")
 		local maxXP = UnitXPMax("player")
 		local restXP = GetXPExhaustion() or 0
@@ -179,21 +187,21 @@ function f:CreateEXP_Frame()
         local xpPerHour = ceil(xpPerSecond * 3600)
         local timeToLevel
 		if xpPerSecond <= 0 then
-			timeToLevel = "None"
+			timeToLevel = L.TooltipTimeToLevelNone
 		else
 			timeToLevel = (maxXP - cur) / xpPerSecond
 		end
-		GameTooltip:AddDoubleLine("EXP:", cur.."/"..max, nil,nil,nil, 1,1,1)
-		GameTooltip:AddDoubleLine("Rest:", string.format("%d%%", (GetXPExhaustion() or 0)/max*100), nil,nil,nil, 1,1,1)
-		GameTooltip:AddDoubleLine("TNL:", maxXP-cur..(" ("..toLevelXPPercent.."%)"), nil,nil,nil, 1,1,1)
-		GameTooltip:AddDoubleLine("XP/Sec:", xpPerSecond, nil,nil,nil, 1,1,1)
-		GameTooltip:AddDoubleLine("XP/Minute:", xpPerMinute, nil,nil,nil, 1,1,1)
-		GameTooltip:AddDoubleLine("XP/Hour:", xpPerHour, nil,nil,nil, 1,1,1)
-		GameTooltip:AddDoubleLine("Time To Level:", FormatTime(timeToLevel), nil,nil,nil, 1,1,1)
-		GameTooltip:AddLine(string.format("%s hours played this session", ceil(sessionTime/3600)), 1,1,1)
-		GameTooltip:AddLine(xpGainedSession.." EXP gained this session", 1,1,1)
-		GameTooltip:AddLine(string.format("%s levels gained this session", ceil(UnitLevel("player") + cur/max - startlevel)), 1,1,1)
-
+		GameTooltip:AddDoubleLine(L.TooltipEXP, cur.."/"..max, nil,nil,nil, 1,1,1)
+		GameTooltip:AddDoubleLine(L.TooltipRest, string.format("%d%%", (GetXPExhaustion() or 0)/max*100), nil,nil,nil, 1,1,1)
+		GameTooltip:AddDoubleLine(L.TooltipToNextLevel, maxXP-cur..(" ("..toLevelXPPercent.."%)"), nil,nil,nil, 1,1,1)
+		GameTooltip:AddDoubleLine(L.TooltipXPPerSec, xpPerSecond, nil,nil,nil, 1,1,1)
+		GameTooltip:AddDoubleLine(L.TooltipXPPerMinute, xpPerMinute, nil,nil,nil, 1,1,1)
+		GameTooltip:AddDoubleLine(L.TooltipXPPerHour, xpPerHour, nil,nil,nil, 1,1,1)
+		GameTooltip:AddDoubleLine(L.TooltipTimeToLevel, FormatTime(timeToLevel), nil,nil,nil, 1,1,1)
+		GameTooltip:AddLine(string.format(L.TooltipSessionHoursPlayed, ceil(sessionTime/3600)), 1,1,1)
+		GameTooltip:AddLine(xpGainedSession..L.TooltipSessionExpGained, 1,1,1)
+		GameTooltip:AddLine(string.format(L.TooltipSessionLevelsGained, ceil(UnitLevel("player") + cur/max - startlevel)), 1,1,1)
+		
 		GameTooltip:Show()
 	end)
 	
@@ -250,22 +258,7 @@ end
 
 
 function f:BackgroundToggle()
-	if not XanEXP_DB then XanEXP_DB = {} end
-	if XanEXP_DB.bgShown == nil then XanEXP_DB.bgShown = 1 end
-	
-	if XanEXP_DB.bgShown == 0 then
-		XanEXP_DB.bgShown = 1;
-		DEFAULT_CHAT_FRAME:AddMessage("xanEXP: Background Shown");
-	elseif XanEXP_DB.bgShown == 1 then
-		XanEXP_DB.bgShown = 0;
-		DEFAULT_CHAT_FRAME:AddMessage("xanEXP: Background Hidden");
-	else
-		XanEXP_DB.bgShown = 1
-		DEFAULT_CHAT_FRAME:AddMessage("xanEXP: Background Shown");
-	end
-
-	--now change background
-	if XanEXP_DB.bgShown == 1 then
+	if XanEXP_DB.bgShown then
 		f:SetBackdrop( {
 			bgFile = "Interface\\TutorialFrame\\TutorialFrameBackground";
 			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border";
@@ -277,7 +270,6 @@ function f:BackgroundToggle()
 	else
 		f:SetBackdrop(nil)
 	end
-	
 end
 
 ------------------------------
@@ -292,7 +284,7 @@ function f:PLAYER_XP_UPDATE()
 	local toLevelXPPercent = math.floor((maxXP - currentXP) / maxXP * 100)
 	
 	--getglobal("xanEXPText"):SetText(string.format("%d%%", currentXP/maxXP*100).." TNL: "..toLevelXPPercent.."%")
-	getglobal("xanEXPText"):SetText(string.format("%d%%", currentXP/maxXP*100))
+	getglobal(ADDON_NAME.."Text"):SetText(string.format("%d%%", currentXP/maxXP*100))
 end
 
 function f:PLAYER_LEVEL_UP()

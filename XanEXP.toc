@@ -2,8 +2,16 @@
 ## Title: xanEXP
 ## Notes: A small window display current xp and other xp information
 ## Author: Xruptor
-## Version: 3.2
+## Version: 3.3
+## X-Curse-Project-ID: 22072
+## X-WoWI-ID: 15353
 ## OptionalDeps: tekDebug
 ## SavedVariablesPerCharacter: XanEXP_DB
 
+libs\LibStub\LibStub.lua
+libs\AceLocale-3.0\AceLocale-3.0.xml
+
+locale\enUS.lua
+
 xanEXP.lua
+config.lua
