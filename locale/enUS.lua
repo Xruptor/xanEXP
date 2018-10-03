@@ -23,6 +23,7 @@ L.SlashScale = "scale"
 L.SlashScaleSet = "xanEXP: scale has been set to [|cFF20ff20%s|r]"
 L.SlashScaleSetInvalid = "xanEXP: scale invalid or number cannot be greater than 2"
 L.SlashScaleInfo = "Set the scale of the xanEXP frame (0-200)"
+L.SlashScaleText = "xanEXP Frame Scale"
 
 L.Waiting = "Waiting..."
 L.FormatDay = "d"

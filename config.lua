@@ -11,14 +11,14 @@ configEvent:SetScript("OnEvent", function(self, event, ...) if self[event] then 
 local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
 
 local lastObject
-local function addConfigEntry(objEntry)
+local function addConfigEntry(objEntry, extraAdjust)
 	
 	objEntry:ClearAllPoints()
 	
 	if not lastObject then
 		objEntry:SetPoint("TOPLEFT", 20, -150)
 	else
-		objEntry:SetPoint("LEFT", lastObject, "BOTTOMLEFT", 0, -35)
+		objEntry:SetPoint("LEFT", lastObject, "BOTTOMLEFT", 0, -30 + (extraAdjust or 0))
 	end
 	
 	lastObject = objEntry
@@ -68,7 +68,7 @@ local function createSlider(parentFrame, displayText, minVal, maxVal)
 	slider:SetBackdrop(SliderBackdrop)
 
 	local label = slider:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	label:SetPoint("CENTER", slider, "CENTER", 0, 12)
+	label:SetPoint("CENTER", slider, "CENTER", 0, 16)
 	label:SetJustifyH("CENTER")
 	label:SetHeight(15)
 	label:SetText(displayText)
@@ -143,11 +143,12 @@ function configEvent:PLAYER_LOGIN()
 	
 	addon.aboutPanel = LoadAboutFrame()
 	
-	addon.aboutPanel.btnBG = createCheckbutton(addon.aboutPanel, L.SlashBGInfo)
-	addon.aboutPanel.btnBG:SetScript("OnShow", function() addon.aboutPanel.btnBG:SetChecked(XanEXP_DB.bgShown) end)
-	addon.aboutPanel.btnBG.func = function(slashSwitch)
+	--bg shown
+	local btnBG = createCheckbutton(addon.aboutPanel, L.SlashBGInfo)
+	btnBG:SetScript("OnShow", function() btnBG:SetChecked(XanEXP_DB.bgShown) end)
+	btnBG.func = function(slashSwitch)
 		local value = XanEXP_DB.bgShown
-		if not slashSwitch then value = addon.aboutPanel.btnBG:GetChecked() end
+		if not slashSwitch then value = btnBG:GetChecked() end
 
 		if value then
 			XanEXP_DB.bgShown = false
@@ -159,40 +160,48 @@ function configEvent:PLAYER_LOGIN()
 		
 		xanEXP:BackgroundToggle()
 	end
-	addon.aboutPanel.btnBG:SetScript("OnClick", addon.aboutPanel.btnBG.func)
-	addConfigEntry(addon.aboutPanel.btnBG)
-
-	addon.aboutPanel.btnReset = createButton(addon.aboutPanel, L.SlashResetInfo)
-	addon.aboutPanel.btnReset.func = function()
+	btnBG:SetScript("OnClick", btnBG.func)
+	
+	addConfigEntry(btnBG)
+	addon.aboutPanel.btnBG = btnBG
+	
+	--reset
+	local btnReset = createButton(addon.aboutPanel, L.SlashResetInfo)
+	btnReset.func = function()
 		DEFAULT_CHAT_FRAME:AddMessage(L.SlashResetAlert)
 		addon:ClearAllPoints()
 		addon:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
 	end
-	addon.aboutPanel.btnReset:SetScript("OnClick", addon.aboutPanel.btnReset.func)
-	addConfigEntry(addon.aboutPanel.btnReset)
+	btnReset:SetScript("OnClick", btnReset.func)
 	
-	addon.aboutPanel.sliderScale = createSlider(addon.aboutPanel, L.SlashResetInfo, 0.1, 200)
-	addon.aboutPanel.sliderScale:SetScript("OnShow", function()
-		addon.aboutPanel.sliderScale:SetValue(floor(XanEXP_DB.scale * 100))
-		addon.aboutPanel.sliderScale.currVal:SetText("("..(XanEXP_DB.scale * 100)..")")
+	addConfigEntry(btnReset)
+	addon.aboutPanel.btnReset = btnReset
+	
+	--scale
+	local sliderScale = createSlider(addon.aboutPanel, L.SlashScaleText, 0.1, 200)
+	sliderScale:SetScript("OnShow", function()
+		sliderScale:SetValue(floor(XanEXP_DB.scale * 100))
+		sliderScale.currVal:SetText("("..(XanEXP_DB.scale * 100)..")")
 	end)
-	addon.aboutPanel.sliderScale.func = function(value)
+	sliderScale.func = function(value)
 		XanEXP_DB.scale = tonumber(value) / 100
 		addon:SetScale(XanEXP_DB.scale)
-		addon.aboutPanel.sliderScale:SetValue(floor(XanEXP_DB.scale * 100))
-		addon.aboutPanel.sliderScale.currVal:SetText("("..floor(XanEXP_DB.scale * 100)..")")
+		sliderScale:SetValue(floor(XanEXP_DB.scale * 100))
+		sliderScale.currVal:SetText("("..floor(XanEXP_DB.scale * 100)..")")
 		DEFAULT_CHAT_FRAME:AddMessage(string.format(L.SlashScaleSet, floor(value)))
 	end
-	addon.aboutPanel.sliderScale.sliderMouseUp = function(self, button)
-		addon.aboutPanel.sliderScale.func(addon.aboutPanel.sliderScale:GetValue())
+	sliderScale.sliderMouseUp = function(self, button)
+		sliderScale.func(sliderScale:GetValue())
 	end
-	addon.aboutPanel.sliderScale.sliderFunc = function(self, value)
+	sliderScale.sliderFunc = function(self, value)
 		addon:SetScale(tonumber(value) / 100)
-		addon.aboutPanel.sliderScale.currVal:SetText("("..floor(value)..")")
+		sliderScale.currVal:SetText("("..floor(value)..")")
 	end
-	addon.aboutPanel.sliderScale:SetScript("OnValueChanged", addon.aboutPanel.sliderScale.sliderFunc)
-	addon.aboutPanel.sliderScale:SetScript("OnMouseUp", addon.aboutPanel.sliderScale.sliderMouseUp)
-	addConfigEntry(addon.aboutPanel.sliderScale)
+	sliderScale:SetScript("OnValueChanged", sliderScale.sliderFunc)
+	sliderScale:SetScript("OnMouseUp", sliderScale.sliderMouseUp)
+	
+	addConfigEntry(sliderScale, -10)
+	addon.aboutPanel.sliderScale = sliderScale
 	
 	configEvent:UnregisterEvent("PLAYER_LOGIN")
 end

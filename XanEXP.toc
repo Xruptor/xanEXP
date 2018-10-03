@@ -2,7 +2,7 @@
 ## Title: xanEXP
 ## Notes: A small window display current xp and other xp information
 ## Author: Xruptor
-## Version: 3.3
+## Version: 3.4
 ## X-Curse-Project-ID: 22072
 ## X-WoWI-ID: 15353
 ## OptionalDeps: tekDebug
