@@ -20,9 +20,9 @@ L.SlashResetInfo = "Reset frame position."
 L.SlashResetAlert = "xanEXP: Frame position has been reset!"
 
 L.SlashScale = "scale"
-L.SlashScaleOn = "xanTooltipHoudini: Quest toolips are now [|cFF99CC33ON|r]"
-L.SlashScaleOff = "xanTooltipHoudini: Quest toolips are now [|cFF99CC33OFF|r]"
-L.SlashScaleInfo = "Allow quest tooltips to be displayed during combat."
+L.SlashScaleSet = "xanEXP: scale has been set to [|cFF20ff20%s|r]"
+L.SlashScaleSetInvalid = "xanEXP: scale invalid or number cannot be greater than 2"
+L.SlashScaleInfo = "Set the scale of the xanEXP frame (0-200)"
 
 L.Waiting = "Waiting..."
 L.FormatDay = "d"

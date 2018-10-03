@@ -62,12 +62,12 @@ function xanEXP_SlashCommand(cmd)
 		elseif c and c:lower() == "scale" then
 			if b then
 				local scalenum = strsub(cmd, b+2)
-				if scalenum and scalenum ~= "" and tonumber(scalenum) then
-					XanEXP_DB.scale = tonumber(scalenum)
-					xanEXP:SetScale(tonumber(scalenum))
-					DEFAULT_CHAT_FRAME:AddMessage("xanEXP: scale has been set to ["..tonumber(scalenum).."]")
-					return true
+				if scalenum and scalenum ~= "" and tonumber(scalenum) and tonumber(scalenum) > 0 and tonumber(scalenum) <= 200 then
+					addon.aboutPanel.sliderScale.func(tonumber(scalenum))
+				else
+					DEFAULT_CHAT_FRAME:AddMessage(L.SlashScaleSetInvalid)
 				end
+				return true
 			end
 		end
 	end
@@ -75,7 +75,7 @@ function xanEXP_SlashCommand(cmd)
 	DEFAULT_CHAT_FRAME:AddMessage(ADDON_NAME, 64/255, 224/255, 208/255);
 	DEFAULT_CHAT_FRAME:AddMessage("/xanexp "..L.SlashReset.." - "..L.SlashResetInfo);
 	DEFAULT_CHAT_FRAME:AddMessage("/xanexp "..L.SlashBG.." - "..L.SlashBGInfo);
-	DEFAULT_CHAT_FRAME:AddMessage("/xanexp scale # - Set the scale of the xanEXP frame")
+	DEFAULT_CHAT_FRAME:AddMessage("/xanexp "..L.SlashScale.." # - "..L.SlashScaleInfo)
 end
 
 local function FormatTime(sTime)
