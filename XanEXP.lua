@@ -72,7 +72,7 @@ function xanEXP_SlashCommand(cmd)
 		end
 	end
 
-	DEFAULT_CHAT_FRAME:AddMessage(ADDON_NAME, 64/255, 224/255, 208/255);
+	DEFAULT_CHAT_FRAME:AddMessage(ADDON_NAME, 64/255, 224/255, 208/255)
 	DEFAULT_CHAT_FRAME:AddMessage("/xanexp "..L.SlashReset.." - "..L.SlashResetInfo);
 	DEFAULT_CHAT_FRAME:AddMessage("/xanexp "..L.SlashBG.." - "..L.SlashBGInfo);
 	DEFAULT_CHAT_FRAME:AddMessage("/xanexp "..L.SlashScale.." # - "..L.SlashScaleInfo)

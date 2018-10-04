@@ -11,14 +11,14 @@ configEvent:SetScript("OnEvent", function(self, event, ...) if self[event] then 
 local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
 
 local lastObject
-local function addConfigEntry(objEntry, extraAdjust)
+local function addConfigEntry(objEntry, adjustX, adjustY)
 	
 	objEntry:ClearAllPoints()
 	
 	if not lastObject then
 		objEntry:SetPoint("TOPLEFT", 20, -150)
 	else
-		objEntry:SetPoint("LEFT", lastObject, "BOTTOMLEFT", 0, -30 + (extraAdjust or 0))
+		objEntry:SetPoint("LEFT", lastObject, "BOTTOMLEFT", adjustX or 0, adjustY or -30)
 	end
 	
 	lastObject = objEntry
@@ -158,11 +158,11 @@ function configEvent:PLAYER_LOGIN()
 			DEFAULT_CHAT_FRAME:AddMessage(L.SlashBGOn)
 		end
 		
-		xanEXP:BackgroundToggle()
+		addon:BackgroundToggle()
 	end
 	btnBG:SetScript("OnClick", btnBG.func)
 	
-	addConfigEntry(btnBG)
+	addConfigEntry(btnBG, 0, -20)
 	addon.aboutPanel.btnBG = btnBG
 	
 	--reset
@@ -174,14 +174,14 @@ function configEvent:PLAYER_LOGIN()
 	end
 	btnReset:SetScript("OnClick", btnReset.func)
 	
-	addConfigEntry(btnReset)
+	addConfigEntry(btnReset, 0, -30)
 	addon.aboutPanel.btnReset = btnReset
 	
 	--scale
 	local sliderScale = createSlider(addon.aboutPanel, L.SlashScaleText, 0.1, 200)
 	sliderScale:SetScript("OnShow", function()
 		sliderScale:SetValue(floor(XanEXP_DB.scale * 100))
-		sliderScale.currVal:SetText("("..(XanEXP_DB.scale * 100)..")")
+		sliderScale.currVal:SetText("("..floor(XanEXP_DB.scale * 100)..")")
 	end)
 	sliderScale.func = function(value)
 		XanEXP_DB.scale = tonumber(value) / 100
@@ -200,7 +200,7 @@ function configEvent:PLAYER_LOGIN()
 	sliderScale:SetScript("OnValueChanged", sliderScale.sliderFunc)
 	sliderScale:SetScript("OnMouseUp", sliderScale.sliderMouseUp)
 	
-	addConfigEntry(sliderScale, -10)
+	addConfigEntry(sliderScale, 0, -40)
 	addon.aboutPanel.sliderScale = sliderScale
 	
 	configEvent:UnregisterEvent("PLAYER_LOGIN")
