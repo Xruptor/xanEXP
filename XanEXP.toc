@@ -1,8 +1,8 @@
-## Interface: 80000
+## Interface: 80300
 ## Title: xanEXP
 ## Notes: A small window display current xp and other xp information
 ## Author: Xruptor
-## Version: 3.6
+## Version: 3.7
 ## X-Curse-Project-ID: 22072
 ## X-WoWI-ID: 15353
 ## OptionalDeps: tekDebug
