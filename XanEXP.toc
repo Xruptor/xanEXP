@@ -7,7 +7,7 @@
 ## Title: xanEXP
 ## Notes: A small window that displays current xp and other xp information.
 ## Author: Xruptor
-## Version: 4.2
+## Version: 4.3
 ## X-Curse-Project-ID: 22072
 ## X-WoWI-ID: 15353
 ## OptionalDeps: tekDebug

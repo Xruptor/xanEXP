@@ -147,7 +147,7 @@ function configFrame:EnableConfig()
 	btnBG:SetScript("OnShow", function() btnBG:SetChecked(XanEXP_DB.bgShown) end)
 	btnBG.func = function(slashSwitch)
 		local value = XanEXP_DB.bgShown
-		if not slashSwitch then value = btnBG:GetChecked() end
+		if not slashSwitch then value = XanEXP_DB.bgShown end
 
 		if value then
 			XanEXP_DB.bgShown = false
