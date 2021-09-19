@@ -1,11 +1,11 @@
-## Interface: 90005
-## Interface-Retail: 90005
+## Interface: 90100
+## Interface-Retail: 90100
 ## Interface-Classic: 11307
-## Interface-BCC: 20501
+## Interface-BCC: 20502
 ## Title: xanEXP
 ## Notes: A small window that displays current xp and other xp information.
 ## Author: Xruptor
-## Version: 4.5
+## Version: 4.6
 ## X-Curse-Project-ID: 22072
 ## X-WoWI-ID: 15353
 ## OptionalDeps: tekDebug
