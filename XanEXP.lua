@@ -37,6 +37,8 @@ addon:SetScript("OnEvent", function(self, event, ...)
 	end
 end)
 
+local xanEXPTooltip = CreateFrame("GameTooltip", "xanEXPTooltip", UIParent, "GameTooltipTemplate")
+
 ----------------------
 --      Enable      --
 ----------------------
@@ -180,18 +182,18 @@ function addon:CreateEXP_Frame()
 		end
 	end)
 	addon:SetScript("OnLeave",function()
-		GameTooltip:Hide()
+		xanEXPTooltip:Hide()
 	end)
 
 	addon:SetScript("OnEnter",function()
 	
-		GameTooltip:SetOwner(self, "ANCHOR_NONE")
-		GameTooltip:SetPoint(self:GetTipAnchor(self))
-		GameTooltip:ClearLines()
+		xanEXPTooltip:SetOwner(self, "ANCHOR_TOP")
+		xanEXPTooltip:SetPoint(self:GetTipAnchor(addon))
+		xanEXPTooltip:ClearLines()
 
-		GameTooltip:AddLine(ADDON_NAME)
-		GameTooltip:AddLine(L.TooltipDragInfo, 64/255, 224/255, 208/255)
-		GameTooltip:AddLine(" ")
+		xanEXPTooltip:AddLine(ADDON_NAME)
+		xanEXPTooltip:AddLine(L.TooltipDragInfo, 64/255, 224/255, 208/255)
+		xanEXPTooltip:AddLine(" ")
 		
 		local cur = UnitXP("player")
 		local maxXP = UnitXPMax("player")
@@ -210,18 +212,18 @@ function addon:CreateEXP_Frame()
 		else
 			timeToLevel = (maxXP - cur) / xpPerSecond
 		end
-		GameTooltip:AddDoubleLine(L.TooltipEXP, cur.."/"..max, nil,nil,nil, 1,1,1)
-		GameTooltip:AddDoubleLine(L.TooltipRest, string.format("%d%%", (GetXPExhaustion() or 0)/max*100), nil,nil,nil, 1,1,1)
-		GameTooltip:AddDoubleLine(L.TooltipToNextLevel, maxXP-cur..(" ("..toLevelXPPercent.."%)"), nil,nil,nil, 1,1,1)
-		GameTooltip:AddDoubleLine(L.TooltipXPPerSec, xpPerSecond, nil,nil,nil, 1,1,1)
-		GameTooltip:AddDoubleLine(L.TooltipXPPerMinute, xpPerMinute, nil,nil,nil, 1,1,1)
-		GameTooltip:AddDoubleLine(L.TooltipXPPerHour, xpPerHour, nil,nil,nil, 1,1,1)
-		GameTooltip:AddDoubleLine(L.TooltipTimeToLevel, FormatTime(timeToLevel), nil,nil,nil, 1,1,1)
-		GameTooltip:AddLine(string.format(L.TooltipSessionHoursPlayed, ceil(sessionTime/3600)), 1,1,1)
-		GameTooltip:AddLine(xpGainedSession..L.TooltipSessionExpGained, 1,1,1)
-		GameTooltip:AddLine(string.format(L.TooltipSessionLevelsGained, ceil(UnitLevel("player") + cur/max - startlevel)), 1,1,1)
+		xanEXPTooltip:AddDoubleLine(L.TooltipEXP, cur.."/"..max, nil,nil,nil, 1,1,1)
+		xanEXPTooltip:AddDoubleLine(L.TooltipRest, string.format("%d%%", (GetXPExhaustion() or 0)/max*100), nil,nil,nil, 1,1,1)
+		xanEXPTooltip:AddDoubleLine(L.TooltipToNextLevel, maxXP-cur..(" ("..toLevelXPPercent.."%)"), nil,nil,nil, 1,1,1)
+		xanEXPTooltip:AddDoubleLine(L.TooltipXPPerSec, xpPerSecond, nil,nil,nil, 1,1,1)
+		xanEXPTooltip:AddDoubleLine(L.TooltipXPPerMinute, xpPerMinute, nil,nil,nil, 1,1,1)
+		xanEXPTooltip:AddDoubleLine(L.TooltipXPPerHour, xpPerHour, nil,nil,nil, 1,1,1)
+		xanEXPTooltip:AddDoubleLine(L.TooltipTimeToLevel, FormatTime(timeToLevel), nil,nil,nil, 1,1,1)
+		xanEXPTooltip:AddLine(string.format(L.TooltipSessionHoursPlayed, ceil(sessionTime/3600)), 1,1,1)
+		xanEXPTooltip:AddLine(xpGainedSession..L.TooltipSessionExpGained, 1,1,1)
+		xanEXPTooltip:AddLine(string.format(L.TooltipSessionLevelsGained, ceil(UnitLevel("player") + cur/max - startlevel)), 1,1,1)
 		
-		GameTooltip:Show()
+		xanEXPTooltip:Show()
 	end)
 	
 	
