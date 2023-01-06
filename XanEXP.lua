@@ -49,6 +49,9 @@ function addon:EnableAddon()
 	if XanEXP_DB.bgShown == nil then XanEXP_DB.bgShown = true end
 	if XanEXP_DB.scale == nil then XanEXP_DB.scale = 1 end
 
+	--don'ty load the addon if we are at max level
+	if UnitLevel("player") >= GetMaxPlayerLevel() then return end
+
 	self:CreateEXP_Frame()
 	self:RestoreLayout(ADDON_NAME)
 
@@ -62,18 +65,18 @@ function addon:EnableAddon()
 
 	SLASH_XANEXP1 = "/xanexp";
 	SlashCmdList["XANEXP"] = xanEXP_SlashCommand;
-	
+
 	if addon.configFrame then addon.configFrame:EnableConfig() end
-	
+
 	local ver = GetAddOnMetadata(ADDON_NAME,"Version") or '1.0'
 	DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFF99CC33%s|r [v|cFF20ff20%s|r] loaded:   /xanexp", ADDON_NAME, ver or "1.0"))
-	
+
 end
 
 function xanEXP_SlashCommand(cmd)
 
 	local a,b,c=strfind(cmd, "(%S+)"); --contiguous string of non-space characters
-	
+
 	if a then
 		if c and c:lower() == L.SlashBG then
 			addon.aboutPanel.btnBG.func(true)
@@ -106,28 +109,28 @@ local function FormatTime(sTime)
 		local hour = floor((sTime - (day * 86400)) / 3600)
 		local minute = floor((sTime - (day * 86400) - (hour * 3600)) / 60)
 		local second = floor(mod(sTime, 60))
-		
+
 		if day < 0 then
 			return L.Waiting
 		else
             local sString = ""
             if day > 0 then
-               sString = day..L.FormatDay.." " 
+               sString = day..L.FormatDay.." "
             end
             if hour > 0 or sString ~= "" then
-               sString = sString..hour..L.FormatHour.." " 
+               sString = sString..hour..L.FormatHour.." "
             end
             if minute > 0 or sString ~= "" then
-               sString = sString..minute..L.FormatMinute.." " 
+               sString = sString..minute..L.FormatMinute.." "
             end
             if second > 0 or sString ~= "" then
-               sString = sString..second..L.FormatSecond 
+               sString = sString..second..L.FormatSecond
             end
             return sString
 		end
 	else
 		return L.Waiting
-	end	
+	end
 end
 
 function addon:CreateEXP_Frame()
@@ -136,9 +139,9 @@ function addon:CreateEXP_Frame()
 	addon:SetHeight(27)
 	addon:SetMovable(true)
 	addon:SetClampedToScreen(true)
-	
+
 	addon:SetScale(XanEXP_DB.scale)
-	
+
 	if XanEXP_DB.bgShown then
 		addon:SetBackdrop( {
 			bgFile = "Interface\\TutorialFrame\\TutorialFrameBackground";
@@ -151,9 +154,9 @@ function addon:CreateEXP_Frame()
 	else
 		addon:SetBackdrop(nil)
 	end
-	
+
 	addon:EnableMouse(true);
-	
+
 	local t = addon:CreateTexture("$parentIcon", "ARTWORK")
 	t:SetTexture("Interface\\AddOns\\xanEXP\\icon")
 	t:SetWidth(16)
@@ -186,7 +189,7 @@ function addon:CreateEXP_Frame()
 	end)
 
 	addon:SetScript("OnEnter",function()
-	
+
 		xanEXPTooltip:SetOwner(self, "ANCHOR_TOP")
 		xanEXPTooltip:SetPoint(self:GetTipAnchor(addon))
 		xanEXPTooltip:ClearLines()
@@ -194,13 +197,13 @@ function addon:CreateEXP_Frame()
 		xanEXPTooltip:AddLine(ADDON_NAME)
 		xanEXPTooltip:AddLine(L.TooltipDragInfo, 64/255, 224/255, 208/255)
 		xanEXPTooltip:AddLine(" ")
-		
+
 		local cur = UnitXP("player")
 		local maxXP = UnitXPMax("player")
 		local restXP = GetXPExhaustion() or 0
 		local remainXP = maxXP - (cur + restXP)
 		local toLevelXPPercent = math.floor((maxXP - cur) / maxXP * 100)
-		
+
         local sessionTime = GetTime() - starttime
 		local xpGainedSession = (cur - start)
         local xpPerSecond = ceil(xpGainedSession / sessionTime)
@@ -222,11 +225,11 @@ function addon:CreateEXP_Frame()
 		xanEXPTooltip:AddLine(string.format(L.TooltipSessionHoursPlayed, ceil(sessionTime/3600)), 1,1,1)
 		xanEXPTooltip:AddLine(xpGainedSession..L.TooltipSessionExpGained, 1,1,1)
 		xanEXPTooltip:AddLine(string.format(L.TooltipSessionLevelsGained, ceil(UnitLevel("player") + cur/max - startlevel)), 1,1,1)
-		
+
 		xanEXPTooltip:Show()
 	end)
-	
-	
+
+
 	addon:Show();
 end
 
@@ -234,7 +237,7 @@ function addon:SaveLayout(frame)
 	if type(frame) ~= "string" then return end
 	if not _G[frame] then return end
 	if not XanEXP_DB then XanEXP_DB = {} end
-	
+
 	local opt = XanEXP_DB[frame] or nil
 
 	if not opt then
@@ -301,7 +304,7 @@ function addon:PLAYER_XP_UPDATE()
 	local restXP = GetXPExhaustion() or 0
 	local remainXP = maxXP - (currentXP + restXP)
 	local toLevelXPPercent = math.floor((maxXP - currentXP) / maxXP * 100)
-	
+
 	--getglobal("xanEXPText"):SetText(string.format("%d%%", currentXP/maxXP*100).." TNL: "..toLevelXPPercent.."%")
 	getglobal("xanEXPText"):SetText(string.format("%d%%", currentXP/maxXP*100))
 end

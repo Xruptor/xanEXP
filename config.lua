@@ -11,32 +11,32 @@ local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
 
 local lastObject
 local function addConfigEntry(objEntry, adjustX, adjustY)
-	
+
 	objEntry:ClearAllPoints()
-	
+
 	if not lastObject then
 		objEntry:SetPoint("TOPLEFT", 20, -150)
 	else
 		objEntry:SetPoint("LEFT", lastObject, "BOTTOMLEFT", adjustX or 0, adjustY or -30)
 	end
-	
+
 	lastObject = objEntry
 end
 
 local chkBoxIndex = 0
 local function createCheckbutton(parentFrame, displayText)
 	chkBoxIndex = chkBoxIndex + 1
-	
+
 	local checkbutton = CreateFrame("CheckButton", ADDON_NAME.."_config_chkbtn_" .. chkBoxIndex, parentFrame, "ChatConfigCheckButtonTemplate")
 	getglobal(checkbutton:GetName() .. 'Text'):SetText(" "..displayText)
-	
+
 	return checkbutton
 end
 
 local buttonIndex = 0
 local function createButton(parentFrame, displayText)
 	buttonIndex = buttonIndex + 1
-	
+
 	local button = CreateFrame("Button", ADDON_NAME.."_config_button_" .. buttonIndex, parentFrame, "UIPanelButtonTemplate")
 	button:SetText(displayText)
 	button:SetHeight(30)
@@ -48,14 +48,14 @@ end
 local sliderIndex = 0
 local function createSlider(parentFrame, displayText, minVal, maxVal)
 	sliderIndex = sliderIndex + 1
-	
+
 	local SliderBackdrop  = {
 		bgFile = "Interface\\Buttons\\UI-SliderBar-Background",
 		edgeFile = "Interface\\Buttons\\UI-SliderBar-Border",
 		tile = true, tileSize = 8, edgeSize = 8,
 		insets = { left = 3, right = 3, top = 6, bottom = 6 }
 	}
-	
+
 	local slider = CreateFrame("Slider", ADDON_NAME.."_config_slider_" .. sliderIndex, parentFrame, BackdropTemplateMixin and "BackdropTemplate")
 	slider:SetOrientation("HORIZONTAL")
 	slider:SetHeight(15)
@@ -79,12 +79,12 @@ local function createSlider(parentFrame, displayText, minVal, maxVal)
 	local hightext = slider:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
 	hightext:SetPoint("TOPRIGHT", slider, "BOTTOMRIGHT", -2, 3)
 	hightext:SetText(maxVal)
-	
+
 	local currVal = slider:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
 	currVal:SetPoint("TOPRIGHT", slider, "BOTTOMRIGHT", 45, 12)
 	currVal:SetText('(?)')
 	slider.currVal = currVal
-	
+
 	return slider
 end
 
@@ -94,7 +94,7 @@ local function LoadAboutFrame()
 	local about = CreateFrame("Frame", ADDON_NAME.."AboutPanel", InterfaceOptionsFramePanelContainer, BackdropTemplateMixin and "BackdropTemplate")
 	about.name = ADDON_NAME
 	about:Hide()
-	
+
     local fields = {"Version", "Author"}
 	local notes = GetAddOnMetadata(ADDON_NAME, "Notes")
 
@@ -132,16 +132,16 @@ local function LoadAboutFrame()
 			anchor = title
 		end
 	end
-	
+
 	InterfaceOptions_AddCategory(about)
 
 	return about
 end
 
 function configFrame:EnableConfig()
-	
+
 	addon.aboutPanel = LoadAboutFrame()
-	
+
 	--bg shown
 	local btnBG = createCheckbutton(addon.aboutPanel, L.SlashBGInfo)
 	btnBG:SetScript("OnShow", function() btnBG:SetChecked(XanEXP_DB.bgShown) end)
@@ -156,14 +156,14 @@ function configFrame:EnableConfig()
 			XanEXP_DB.bgShown = true
 			DEFAULT_CHAT_FRAME:AddMessage(L.SlashBGOn)
 		end
-		
+
 		addon:BackgroundToggle()
 	end
 	btnBG:SetScript("OnClick", btnBG.func)
-	
+
 	addConfigEntry(btnBG, 0, -20)
 	addon.aboutPanel.btnBG = btnBG
-	
+
 	--reset
 	local btnReset = createButton(addon.aboutPanel, L.SlashResetInfo)
 	btnReset.func = function()
@@ -172,10 +172,10 @@ function configFrame:EnableConfig()
 		addon:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
 	end
 	btnReset:SetScript("OnClick", btnReset.func)
-	
+
 	addConfigEntry(btnReset, 0, -30)
 	addon.aboutPanel.btnReset = btnReset
-	
+
 	--scale
 	local sliderScale = createSlider(addon.aboutPanel, L.SlashScaleText, 0.1, 200)
 	sliderScale:SetScript("OnShow", function()
@@ -198,8 +198,8 @@ function configFrame:EnableConfig()
 	end
 	sliderScale:SetScript("OnValueChanged", sliderScale.sliderFunc)
 	sliderScale:SetScript("OnMouseUp", sliderScale.sliderMouseUp)
-	
+
 	addConfigEntry(sliderScale, 0, -40)
 	addon.aboutPanel.sliderScale = sliderScale
-	
+
 end
