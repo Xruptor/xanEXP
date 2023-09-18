@@ -46,7 +46,7 @@ local function createButton(parentFrame, displayText)
 end
 
 local sliderIndex = 0
-local function createSlider(parentFrame, displayText, minVal, maxVal)
+local function createSlider(parentFrame, displayText, minVal, maxVal, setStep)
 	sliderIndex = sliderIndex + 1
 
 	local SliderBackdrop  = {
@@ -62,9 +62,10 @@ local function createSlider(parentFrame, displayText, minVal, maxVal)
 	slider:SetWidth(300)
 	slider:SetHitRectInsets(0, 0, -10, 0)
 	slider:SetThumbTexture("Interface\\Buttons\\UI-SliderBar-Button-Horizontal")
-	slider:SetMinMaxValues(minVal or 0, maxVal or 100)
-	slider:SetValue(0)
+	slider:SetMinMaxValues(minVal or 0.5, maxVal or 5)
+	slider:SetValue(0.5)
 	slider:SetBackdrop(SliderBackdrop)
+	slider:SetValueStep(setStep or 1)
 
 	local label = slider:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	label:SetPoint("CENTER", slider, "CENTER", 0, 16)
@@ -177,29 +178,25 @@ function configFrame:EnableConfig()
 	addon.aboutPanel.btnReset = btnReset
 
 	--scale
-	local sliderScale = createSlider(addon.aboutPanel, L.SlashScaleText, 0.1, 200)
+	local sliderScale = createSlider(addon.aboutPanel, L.SlashScaleText, 0.5, 5, 0.1)
 	sliderScale:SetScript("OnShow", function()
-		sliderScale:SetValue(floor(XanEXP_DB.scale * 100))
-		sliderScale.currVal:SetText("("..floor(XanEXP_DB.scale * 100)..")")
+		sliderScale:SetValue(XanEXP_DB.scale)
+		sliderScale.currVal:SetText("("..XanEXP_DB.scale..")")
 	end)
-	sliderScale.func = function(value)
-		XanEXP_DB.scale = tonumber(value) / 100
-		addon:SetScale(XanEXP_DB.scale)
-		sliderScale:SetValue(floor(XanEXP_DB.scale * 100))
-		sliderScale.currVal:SetText("("..floor(XanEXP_DB.scale * 100)..")")
-		DEFAULT_CHAT_FRAME:AddMessage(string.format(L.SlashScaleSet, floor(value)))
+	sliderScale.sliderFunc = function(self, value)
+		value = math.floor(value * 10) / 10
+		if value < 0.5 then value = 0.5 end --always make sure we are 0.5 as the highest zero.  Anything lower will make the frame dissapear
+		if value > 5 then value = 5 end --nothing bigger than this
+		sliderScale.currVal:SetText("("..value..")")
+		sliderScale:SetValue(value)
 	end
 	sliderScale.sliderMouseUp = function(self, button)
-		sliderScale.func(sliderScale:GetValue())
-	end
-	sliderScale.sliderFunc = function(self, value)
-		addon:SetScale(tonumber(value) / 100)
-		sliderScale.currVal:SetText("("..floor(value)..")")
+		local value = math.floor(self:GetValue() * 10) / 10
+		addon:SetAddonScale(value)
 	end
 	sliderScale:SetScript("OnValueChanged", sliderScale.sliderFunc)
 	sliderScale:SetScript("OnMouseUp", sliderScale.sliderMouseUp)
 
 	addConfigEntry(sliderScale, 0, -40)
 	addon.aboutPanel.sliderScale = sliderScale
-
 end

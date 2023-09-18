@@ -1,11 +1,12 @@
-## Interface: 100100
-## Interface-Retail: 100100
-## Interface-Classic: 11403
-## Interface-Wrath: 30401
+## Interface: 100107
+## Interface-Retail: 100107
+## Interface-Classic: 11404
+## Interface-Wrath: 30402
 ## Title: xanEXP
 ## Notes: A small window that displays current xp and other xp information.
 ## Author: Xruptor
-## Version: 5.4
+## Version: 5.5
+## IconTexture: 413579
 ## X-Curse-Project-ID: 22072
 ## X-WoWI-ID: 15353
 ## X-Wago-ID: 7x61pWN1
