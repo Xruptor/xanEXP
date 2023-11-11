@@ -158,7 +158,7 @@ function addon:CreateEXP_Frame()
 	addon:EnableMouse(true);
 
 	local t = addon:CreateTexture("$parentIcon", "ARTWORK")
-	t:SetTexture(413579)
+	t:SetTexture(894556)
 	t:SetWidth(16)
 	t:SetHeight(16)
 	t:SetPoint("TOPLEFT",5,-6)
