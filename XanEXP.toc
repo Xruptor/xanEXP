@@ -4,6 +4,7 @@
 ## Interface-Cata: 40400
 ## Title: xanEXP
 ## Notes: A small window that displays current xp and other xp information.
+## Notes-zhCN:  一个显示当前经验和其他经验信息的小窗口。
 ## Author: Xruptor
 ## Version: 5.10
 ## IconTexture: 894556
@@ -17,6 +18,7 @@ libs\LibStub\LibStub.lua
 libs\AceLocale-3.0\AceLocale-3.0.xml
 
 locale\enUS.lua
+locale\zhCN.lua
 
 xanEXP.lua
 config.lua
