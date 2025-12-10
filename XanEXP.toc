@@ -1,9 +1,9 @@
-## Interface: 110200, 50500, 40402, 30405, 20504, 11507
+## Interface: 110207, 50502, 40402, 30405, 20504, 11508
 ## Title: xanEXP
 ## Notes: A small window that displays current xp and other xp information.
 ## Notes-zhCN:  一个显示当前经验和其他经验信息的小窗口。
 ## Author: Xruptor
-## Version: 5.12
+## Version: 5.13
 ## IconTexture: 894556
 ## X-Curse-Project-ID: 22072
 ## X-WoWI-ID: 15353
