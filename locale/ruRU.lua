@@ -3,16 +3,16 @@ local ADDON_NAME, addon = ...
 local L = LibStub("AceLocale-3.0"):NewLocale(ADDON_NAME, "ruRU")
 if not L then return end
 -- Translator ZamestoTV
-L.SlashBG = "фон"
+L.SlashBG = "bg"
 L.SlashBGOn = "xanEXP: Фон теперь [|cFF99CC33ПОКАЗАН|r]"
 L.SlashBGOff = "xanEXP: Фон теперь [|cFF99CC33СКРЫТ|r]"
 L.SlashBGInfo = "Показывать фон окна."
 
-L.SlashReset = "сброс"
+L.SlashReset = "reset"
 L.SlashResetInfo = "Сбросить позицию окна."
 L.SlashResetAlert = "xanEXP: Позиция окна сброшена!"
 
-L.SlashScale = "масштаб"
+L.SlashScale = "scale"
 L.SlashScaleSet = "xanEXP: масштаб установлен на [|cFF20ff20%s|r]"
 L.SlashScaleSetInvalid = "Неверный масштаб! Число должно быть от [0.5 - 5]. (0.5, 1, 3, 4.6 и т.д.)"
 L.SlashScaleInfo = "Установить масштаб окон лута LootRollMover (0.5 - 5)."
