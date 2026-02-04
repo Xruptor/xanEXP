@@ -1,17 +1,18 @@
-local ADDON_NAME, addon = ...
+local ADDON_NAME, private = ...
 if not _G[ADDON_NAME] then
 	_G[ADDON_NAME] = CreateFrame("Frame", ADDON_NAME, UIParent, BackdropTemplateMixin and "BackdropTemplate")
 end
-addon = _G[ADDON_NAME]
+local addon = _G[ADDON_NAME]
 
-addon.configFrame = CreateFrame("frame", ADDON_NAME.."_config_eventFrame", UIParent, BackdropTemplateMixin and "BackdropTemplate")
+addon.private = private
+addon.L = (private and private.L) or addon.L or {}
+local L = addon.L
+
+addon.configFrame = CreateFrame("frame", ADDON_NAME .. "_config_eventFrame", UIParent, BackdropTemplateMixin and "BackdropTemplate")
 local configFrame = addon.configFrame
-
-local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
 
 local lastObject
 local function addConfigEntry(objEntry, adjustX, adjustY)
-
 	objEntry:ClearAllPoints()
 
 	if not lastObject then
@@ -27,8 +28,11 @@ local chkBoxIndex = 0
 local function createCheckbutton(parentFrame, displayText)
 	chkBoxIndex = chkBoxIndex + 1
 
-	local checkbutton = CreateFrame("CheckButton", ADDON_NAME.."_config_chkbtn_" .. chkBoxIndex, parentFrame, "ChatConfigCheckButtonTemplate")
-	getglobal(checkbutton:GetName() .. 'Text'):SetText(" "..displayText)
+	local checkbutton = CreateFrame("CheckButton", ADDON_NAME .. "_config_chkbtn_" .. chkBoxIndex, parentFrame, "ChatConfigCheckButtonTemplate")
+	local text = _G[checkbutton:GetName() .. "Text"]
+	if text then
+		text:SetText(" " .. displayText)
+	end
 
 	return checkbutton
 end
@@ -37,7 +41,7 @@ local buttonIndex = 0
 local function createButton(parentFrame, displayText)
 	buttonIndex = buttonIndex + 1
 
-	local button = CreateFrame("Button", ADDON_NAME.."_config_button_" .. buttonIndex, parentFrame, "UIPanelButtonTemplate")
+	local button = CreateFrame("Button", ADDON_NAME .. "_config_button_" .. buttonIndex, parentFrame, "UIPanelButtonTemplate")
 	button:SetText(displayText)
 	button:SetHeight(30)
 	button:SetWidth(button:GetTextWidth() + 30)
@@ -49,22 +53,24 @@ local sliderIndex = 0
 local function createSlider(parentFrame, displayText, minVal, maxVal, setStep)
 	sliderIndex = sliderIndex + 1
 
-	local SliderBackdrop  = {
+	local sliderBackdrop = {
 		bgFile = "Interface\\Buttons\\UI-SliderBar-Background",
 		edgeFile = "Interface\\Buttons\\UI-SliderBar-Border",
-		tile = true, tileSize = 8, edgeSize = 8,
-		insets = { left = 3, right = 3, top = 6, bottom = 6 }
+		tile = true,
+		tileSize = 8,
+		edgeSize = 8,
+		insets = { left = 3, right = 3, top = 6, bottom = 6 },
 	}
 
-	local slider = CreateFrame("Slider", ADDON_NAME.."_config_slider_" .. sliderIndex, parentFrame, BackdropTemplateMixin and "BackdropTemplate")
+	local slider = CreateFrame("Slider", ADDON_NAME .. "_config_slider_" .. sliderIndex, parentFrame, BackdropTemplateMixin and "BackdropTemplate")
 	slider:SetOrientation("HORIZONTAL")
 	slider:SetHeight(15)
 	slider:SetWidth(300)
 	slider:SetHitRectInsets(0, 0, -10, 0)
 	slider:SetThumbTexture("Interface\\Buttons\\UI-SliderBar-Button-Horizontal")
 	slider:SetMinMaxValues(minVal or 0.5, maxVal or 5)
-	slider:SetValue(0.5)
-	slider:SetBackdrop(SliderBackdrop)
+	slider:SetValue(minVal or 0.5)
+	slider:SetBackdrop(sliderBackdrop)
 	slider:SetValueStep(setStep or 1)
 
 	local label = slider:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -83,24 +89,23 @@ local function createSlider(parentFrame, displayText, minVal, maxVal, setStep)
 
 	local currVal = slider:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
 	currVal:SetPoint("TOPRIGHT", slider, "BOTTOMRIGHT", 45, 12)
-	currVal:SetText('(?)')
+	currVal:SetText("(?)")
 	slider.currVal = currVal
 
 	return slider
 end
 
 local function LoadAboutFrame()
-
-	--Code inspired from tekKonfigAboutPanel
-	local about = CreateFrame("Frame", ADDON_NAME.."AboutPanel", InterfaceOptionsFramePanelContainer, BackdropTemplateMixin and "BackdropTemplate")
+	-- Code inspired from tekKonfigAboutPanel
+	local parent = _G.InterfaceOptionsFramePanelContainer or _G.SettingsPanel or UIParent
+	local about = CreateFrame("Frame", ADDON_NAME .. "AboutPanel", parent, BackdropTemplateMixin and "BackdropTemplate")
 	about.name = ADDON_NAME
 	about:Hide()
 
-    local fields = {"Version", "Author"}
-	local notes = C_AddOns.GetAddOnMetadata(ADDON_NAME, "Notes")
+	local fields = { "Version", "Author" }
+	local notes = (addon.GetAddonMetadata and addon.GetAddonMetadata("Notes")) or ""
 
-    local title = about:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-
+	local title = about:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
 	title:SetPoint("TOPLEFT", 16, -16)
 	title:SetText(ADDON_NAME)
 
@@ -114,56 +119,64 @@ local function LoadAboutFrame()
 	subtitle:SetText(notes)
 
 	local anchor
-	for _,field in pairs(fields) do
-		local val = C_AddOns.GetAddOnMetadata(ADDON_NAME, field)
+	for _, field in pairs(fields) do
+		local val = (addon.GetAddonMetadata and addon.GetAddonMetadata(field)) or nil
 		if val then
-			local title = about:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-			title:SetWidth(75)
-			if not anchor then title:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", -2, -8)
-			else title:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -6) end
-			title:SetJustifyH("RIGHT")
-			title:SetText(field:gsub("X%-", ""))
+			local titleField = about:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+			titleField:SetWidth(75)
+			if not anchor then
+				titleField:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", -2, -8)
+			else
+				titleField:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -6)
+			end
+			titleField:SetJustifyH("RIGHT")
+			titleField:SetText(field:gsub("X%-", ""))
 
 			local detail = about:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-			detail:SetPoint("LEFT", title, "RIGHT", 4, 0)
+			detail:SetPoint("LEFT", titleField, "RIGHT", 4, 0)
 			detail:SetPoint("RIGHT", -16, 0)
 			detail:SetJustifyH("LEFT")
 			detail:SetText(val)
 
-			anchor = title
+			anchor = titleField
 		end
 	end
 
 	if InterfaceOptions_AddCategory then
 		InterfaceOptions_AddCategory(about)
 	else
-		local category, layout = _G.Settings.RegisterCanvasLayoutCategory(about, about.name);
-		_G.Settings.RegisterAddOnCategory(category);
+		local category, layout = _G.Settings.RegisterCanvasLayoutCategory(about, about.name)
+		_G.Settings.RegisterAddOnCategory(category)
 		addon.settingsCategory = category
 	end
 
 	return about
 end
 
-function configFrame:EnableConfig()
+local function NormalizeScale(value)
+	value = addon.ClampScale and addon.ClampScale(value) or tonumber(value) or 1
+	return math.floor(value * 10 + 0.5) / 10
+end
 
+function configFrame:EnableConfig()
+	lastObject = nil
 	addon.aboutPanel = LoadAboutFrame()
 
-	--bg shown
+	local db = addon.db or _G.XanEXP_DB or {}
+	addon.db = db
+
+	-- bg shown
 	local btnBG = createCheckbutton(addon.aboutPanel, L.SlashBGInfo)
-	btnBG:SetScript("OnShow", function() btnBG:SetChecked(XanEXP_DB.bgShown) end)
-	btnBG.func = function(slashSwitch)
-		local value = XanEXP_DB.bgShown
-		if not slashSwitch then value = XanEXP_DB.bgShown end
-
-		if value then
-			XanEXP_DB.bgShown = false
-			DEFAULT_CHAT_FRAME:AddMessage(L.SlashBGOff)
-		else
-			XanEXP_DB.bgShown = true
+	btnBG:SetScript("OnShow", function()
+		btnBG:SetChecked(db.bgShown)
+	end)
+	btnBG.func = function()
+		db.bgShown = not db.bgShown
+		if db.bgShown then
 			DEFAULT_CHAT_FRAME:AddMessage(L.SlashBGOn)
+		else
+			DEFAULT_CHAT_FRAME:AddMessage(L.SlashBGOff)
 		end
-
 		addon:BackgroundToggle()
 	end
 	btnBG:SetScript("OnClick", btnBG.func)
@@ -171,7 +184,7 @@ function configFrame:EnableConfig()
 	addConfigEntry(btnBG, 0, -20)
 	addon.aboutPanel.btnBG = btnBG
 
-	--reset
+	-- reset
 	local btnReset = createButton(addon.aboutPanel, L.SlashResetInfo)
 	btnReset.func = function()
 		DEFAULT_CHAT_FRAME:AddMessage(L.SlashResetAlert)
@@ -183,25 +196,25 @@ function configFrame:EnableConfig()
 	addConfigEntry(btnReset, 0, -30)
 	addon.aboutPanel.btnReset = btnReset
 
-	--scale
+	-- scale
 	local sliderScale = createSlider(addon.aboutPanel, L.SlashScaleText, 0.5, 5, 0.1)
 	sliderScale:SetScript("OnShow", function()
-		sliderScale:SetValue(XanEXP_DB.scale)
-		sliderScale.currVal:SetText("("..XanEXP_DB.scale..")")
-	end)
-	sliderScale.sliderFunc = function(self, value)
-		value = math.floor(value * 10) / 10
-		if value < 0.5 then value = 0.5 end --always make sure we are 0.5 as the highest zero.  Anything lower will make the frame dissapear
-		if value > 5 then value = 5 end --nothing bigger than this
-		sliderScale.currVal:SetText("("..value..")")
+		local value = NormalizeScale(db.scale or 1)
 		sliderScale:SetValue(value)
+		sliderScale.currVal:SetText("(" .. value .. ")")
+	end)
+	local function UpdateSliderText(value)
+		local normalized = NormalizeScale(value)
+		sliderScale.currVal:SetText("(" .. normalized .. ")")
+		return normalized
 	end
-	sliderScale.sliderMouseUp = function(self, button)
-		local value = math.floor(self:GetValue() * 10) / 10
+	sliderScale:SetScript("OnValueChanged", function(self, value)
+		UpdateSliderText(value)
+	end)
+	sliderScale:SetScript("OnMouseUp", function(self)
+		local value = UpdateSliderText(self:GetValue())
 		addon:SetAddonScale(value)
-	end
-	sliderScale:SetScript("OnValueChanged", sliderScale.sliderFunc)
-	sliderScale:SetScript("OnMouseUp", sliderScale.sliderMouseUp)
+	end)
 
 	addConfigEntry(sliderScale, 0, -40)
 	addon.aboutPanel.sliderScale = sliderScale

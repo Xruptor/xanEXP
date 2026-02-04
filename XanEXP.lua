@@ -1,39 +1,196 @@
 --Inspired by Author Tekkub and his mod PicoEXP
 
-local ADDON_NAME, addon = ...
-if not _G[ADDON_NAME] then
-	_G[ADDON_NAME] = CreateFrame("Frame", ADDON_NAME, UIParent, BackdropTemplateMixin and "BackdropTemplate")
+local ADDON_NAME, private = ...
+if type(private) ~= "table" then
+	private = {}
 end
-addon = _G[ADDON_NAME]
 
-local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
+local BACKDROP_TEMPLATE = BackdropTemplateMixin and "BackdropTemplate"
+if not _G[ADDON_NAME] then
+	_G[ADDON_NAME] = CreateFrame("Frame", ADDON_NAME, UIParent, BACKDROP_TEMPLATE)
+end
+local addon = _G[ADDON_NAME]
 
-local start, max, starttime, startlevel
+addon.private = private
+addon.L = (private and private.L) or addon.L or {}
+local L = addon.L
 
-local debugf = tekDebug and tekDebug:GetFrame(ADDON_NAME)
-local function Debug(...)
-    if debugf then debugf:AddMessage(string.join(", ", tostringall(...))) end
+local floor, ceil, fmod = math.floor, math.ceil, math.fmod
+local format = string.format
+local strlower = string.lower
+local strmatch = string.match
+
+local UnitXP = _G.UnitXP
+local UnitXPMax = _G.UnitXPMax
+local UnitLevel = _G.UnitLevel
+local GetXPExhaustion = _G.GetXPExhaustion
+local GetTime = _G.GetTime
+local IsLoggedIn = _G.IsLoggedIn
+local GetMaxPlayerLevel = _G.GetMaxPlayerLevel
+local UIParent = _G.UIParent
+local DEFAULT_CHAT_FRAME = _G.DEFAULT_CHAT_FRAME
+
+local C_AddOns = _G.C_AddOns
+local GetAddOnMetadata = _G.GetAddOnMetadata
+
+local function GetAddonMetadata(field)
+	if C_AddOns and C_AddOns.GetAddOnMetadata then
+		return C_AddOns.GetAddOnMetadata(ADDON_NAME, field)
+	end
+	if GetAddOnMetadata then
+		return GetAddOnMetadata(ADDON_NAME, field)
+	end
+	return nil
+end
+addon.GetAddonMetadata = GetAddonMetadata
+
+local BACKDROP = {
+	bgFile = "Interface\\TutorialFrame\\TutorialFrameBackground",
+	edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+	tile = true,
+	tileSize = 32,
+	edgeSize = 16,
+	insets = { left = 5, right = 5, top = 5, bottom = 5 },
+}
+
+local function ApplyBackdrop(frame, enabled)
+	if not frame or not frame.SetBackdrop then return end
+	if enabled then
+		frame:SetBackdrop(BACKDROP)
+		frame:SetBackdropBorderColor(0.5, 0.5, 0.5)
+		frame:SetBackdropColor(0.5, 0.5, 0.5, 0.6)
+	else
+		frame:SetBackdrop(nil)
+	end
+end
+
+local function GetDB()
+	if not XanEXP_DB then XanEXP_DB = {} end
+	return XanEXP_DB
+end
+
+local function ApplyDefaults(db)
+	if db.bgShown == nil then db.bgShown = true end
+	if db.scale == nil then db.scale = 1 end
+end
+
+local function ClampScale(value)
+	value = tonumber(value) or 1
+	if value < 0.5 then return 0.5 end
+	if value > 5 then return 5 end
+	return value
+end
+addon.ClampScale = ClampScale
+
+local function FormatTime(sTime)
+	if type(sTime) ~= "number" or sTime <= 0 then
+		return L.Waiting
+	end
+
+	local day = floor(sTime / 86400)
+	local hour = floor((sTime - (day * 86400)) / 3600)
+	local minute = floor((sTime - (day * 86400) - (hour * 3600)) / 60)
+	local second = floor(fmod(sTime, 60))
+
+	if day < 0 then
+		return L.Waiting
+	end
+
+	local parts = {}
+	if day > 0 then
+		parts[#parts + 1] = day .. L.FormatDay
+	end
+	if hour > 0 or #parts > 0 then
+		parts[#parts + 1] = hour .. L.FormatHour
+	end
+	if minute > 0 or #parts > 0 then
+		parts[#parts + 1] = minute .. L.FormatMinute
+	end
+	if second > 0 or #parts > 0 then
+		parts[#parts + 1] = second .. L.FormatSecond
+	end
+	return table.concat(parts, " ")
+end
+
+local session = {
+	startXP = 0,
+	maxXP = 0,
+	startTime = 0,
+	startLevel = 0,
+}
+
+local function InitSession()
+	session.startXP = UnitXP("player")
+	session.maxXP = UnitXPMax("player")
+	session.startTime = GetTime()
+	if session.maxXP > 0 then
+		session.startLevel = UnitLevel("player") + (session.startXP / session.maxXP)
+	else
+		session.startLevel = UnitLevel("player")
+	end
+end
+
+local function EnsureLayout(db, frame)
+	db[frame] = db[frame] or {
+		point = "CENTER",
+		relativePoint = "CENTER",
+		xOfs = 0,
+		yOfs = 0,
+	}
+	return db[frame]
+end
+
+local function HandleSlashCommand(msg)
+	local cmd, rest = strmatch(msg or "", "^(%S+)%s*(.-)$")
+	if cmd then
+		cmd = strlower(cmd)
+		if cmd == strlower(L.SlashBG) then
+			if addon.aboutPanel and addon.aboutPanel.btnBG then
+				addon.aboutPanel.btnBG.func(true)
+			end
+			return
+		elseif cmd == strlower(L.SlashReset) then
+			if addon.aboutPanel and addon.aboutPanel.btnReset then
+				addon.aboutPanel.btnReset.func()
+			end
+			return
+		elseif cmd == strlower(L.SlashScale) then
+			local value = tonumber(rest)
+			if value and value >= 0.5 and value <= 5 then
+				addon:SetAddonScale(value)
+			else
+				DEFAULT_CHAT_FRAME:AddMessage(L.SlashScaleSetInvalid)
+			end
+			return
+		end
+	end
+
+	DEFAULT_CHAT_FRAME:AddMessage(ADDON_NAME, 64 / 255, 224 / 255, 208 / 255)
+	DEFAULT_CHAT_FRAME:AddMessage("/xanexp " .. L.SlashReset .. " - " .. L.SlashResetInfo)
+	DEFAULT_CHAT_FRAME:AddMessage("/xanexp " .. L.SlashBG .. " - " .. L.SlashBGInfo)
+	DEFAULT_CHAT_FRAME:AddMessage("/xanexp " .. L.SlashScale .. " # - " .. L.SlashScaleInfo)
 end
 
 addon:RegisterEvent("ADDON_LOADED")
 addon:SetScript("OnEvent", function(self, event, ...)
-	if event == "ADDON_LOADED" or event == "PLAYER_LOGIN" then
-		if event == "ADDON_LOADED" then
-			local arg1 = ...
-			if arg1 and arg1 == ADDON_NAME then
-				self:UnregisterEvent("ADDON_LOADED")
-				self:RegisterEvent("PLAYER_LOGIN")
-			end
-			return
+	if event == "ADDON_LOADED" then
+		local arg1 = ...
+		if arg1 and arg1 == ADDON_NAME then
+			self:UnregisterEvent("ADDON_LOADED")
+			self:RegisterEvent("PLAYER_LOGIN")
 		end
+		return
+	end
+	if event == "PLAYER_LOGIN" then
 		if IsLoggedIn() then
 			self:EnableAddon(event, ...)
 			self:UnregisterEvent("PLAYER_LOGIN")
 		end
 		return
 	end
-	if self[event] then
-		return self[event](self, event, ...)
+	local handler = self[event]
+	if handler then
+		return handler(self, event, ...)
 	end
 end)
 
@@ -44,227 +201,138 @@ local xanEXPTooltip = CreateFrame("GameTooltip", "xanEXPTooltip", UIParent, "Gam
 ----------------------
 
 function addon:EnableAddon()
+	local db = GetDB()
+	ApplyDefaults(db)
+	self.db = db
 
-	if not XanEXP_DB then XanEXP_DB = {} end
-	if XanEXP_DB.bgShown == nil then XanEXP_DB.bgShown = true end
-	if XanEXP_DB.scale == nil then XanEXP_DB.scale = 1 end
-
-	--don'ty load the addon if we are at max level
-	if UnitLevel("player") >= GetMaxPlayerLevel() then return end
+	-- don't load the addon if we are at max level
+	if GetMaxPlayerLevel and UnitLevel("player") >= GetMaxPlayerLevel() then return end
 
 	self:CreateEXP_Frame()
 	self:RestoreLayout(ADDON_NAME)
 
-	start, max, starttime = UnitXP("player"), UnitXPMax("player"), GetTime()
-	startlevel = UnitLevel("player") + start/max
+	InitSession()
 
 	self:RegisterEvent("PLAYER_XP_UPDATE")
 	self:RegisterEvent("PLAYER_LEVEL_UP")
 
 	self:PLAYER_XP_UPDATE()
 
-	SLASH_XANEXP1 = "/xanexp";
-	SlashCmdList["XANEXP"] = xanEXP_SlashCommand;
+	SLASH_XANEXP1 = "/xanexp"
+	SlashCmdList["XANEXP"] = HandleSlashCommand
 
 	if addon.configFrame then addon.configFrame:EnableConfig() end
 
-	local ver = C_AddOns.GetAddOnMetadata(ADDON_NAME,"Version") or '1.0'
-	DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFF99CC33%s|r [v|cFF20ff20%s|r] loaded:   /xanexp", ADDON_NAME, ver or "1.0"))
-
-end
-
-function xanEXP_SlashCommand(cmd)
-
-	local a,b,c=strfind(cmd, "(%S+)"); --contiguous string of non-space characters
-
-	if a then
-		if c and c:lower() == L.SlashBG then
-			addon.aboutPanel.btnBG.func(true)
-			return true
-		elseif c and c:lower() == L.SlashReset then
-			addon.aboutPanel.btnReset.func()
-			return true
-		elseif c and c:lower() == L.SlashScale then
-			if b then
-				local scalenum = strsub(cmd, b+2)
-				if scalenum and scalenum ~= "" and tonumber(scalenum) and tonumber(scalenum) >= 0.5 and tonumber(scalenum) <= 5 then
-					addon:SetAddonScale(tonumber(scalenum))
-				else
-					DEFAULT_CHAT_FRAME:AddMessage(L.SlashScaleSetInvalid)
-				end
-				return true
-			end
-		end
-	end
-
-	DEFAULT_CHAT_FRAME:AddMessage(ADDON_NAME, 64/255, 224/255, 208/255)
-	DEFAULT_CHAT_FRAME:AddMessage("/xanexp "..L.SlashReset.." - "..L.SlashResetInfo);
-	DEFAULT_CHAT_FRAME:AddMessage("/xanexp "..L.SlashBG.." - "..L.SlashBGInfo);
-	DEFAULT_CHAT_FRAME:AddMessage("/xanexp "..L.SlashScale.." # - "..L.SlashScaleInfo)
-end
-
-local function FormatTime(sTime)
-	if type(sTime) == "number" and sTime > 0 then
-        local day = floor(sTime / 86400)
-		local hour = floor((sTime - (day * 86400)) / 3600)
-		local minute = floor((sTime - (day * 86400) - (hour * 3600)) / 60)
-		local second = floor(mod(sTime, 60))
-
-		if day < 0 then
-			return L.Waiting
-		else
-            local sString = ""
-            if day > 0 then
-               sString = day..L.FormatDay.." "
-            end
-            if hour > 0 or sString ~= "" then
-               sString = sString..hour..L.FormatHour.." "
-            end
-            if minute > 0 or sString ~= "" then
-               sString = sString..minute..L.FormatMinute.." "
-            end
-            if second > 0 or sString ~= "" then
-               sString = sString..second..L.FormatSecond
-            end
-            return sString
-		end
-	else
-		return L.Waiting
-	end
+	local ver = GetAddonMetadata("Version") or "1.0"
+	DEFAULT_CHAT_FRAME:AddMessage(format("|cFF99CC33%s|r [v|cFF20ff20%s|r] loaded:   /xanexp", ADDON_NAME, ver))
 end
 
 function addon:CreateEXP_Frame()
+	self:SetSize(61, 27)
+	self:SetMovable(true)
+	self:SetClampedToScreen(true)
 
-	addon:SetWidth(61)
-	addon:SetHeight(27)
-	addon:SetMovable(true)
-	addon:SetClampedToScreen(true)
+	self:SetAddonScale(self.db and self.db.scale or 1, true)
+	ApplyBackdrop(self, self.db and self.db.bgShown)
 
-	addon:SetAddonScale(XanEXP_DB.scale, true)
+	self:EnableMouse(true)
 
-	if XanEXP_DB.bgShown then
-		addon:SetBackdrop( {
-			bgFile = "Interface\\TutorialFrame\\TutorialFrameBackground";
-			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border";
-			tile = true; tileSize = 32; edgeSize = 16;
-			insets = { left = 5; right = 5; top = 5; bottom = 5; };
-		} );
-		addon:SetBackdropBorderColor(0.5, 0.5, 0.5);
-		addon:SetBackdropColor(0.5, 0.5, 0.5, 0.6)
-	else
-		addon:SetBackdrop(nil)
-	end
-
-	addon:EnableMouse(true);
-
-	local t = addon:CreateTexture("$parentIcon", "ARTWORK")
+	local t = self:CreateTexture("$parentIcon", "ARTWORK")
 	t:SetTexture(894556)
-	t:SetWidth(16)
-	t:SetHeight(16)
-	t:SetPoint("TOPLEFT",5,-6)
+	t:SetSize(16, 16)
+	t:SetPoint("TOPLEFT", 5, -6)
 
-	local g = addon:CreateFontString("xanEXPText", "ARTWORK", "GameFontNormalSmall")
+	local g = self:CreateFontString("xanEXPText", "ARTWORK", "GameFontNormalSmall")
 	g:SetJustifyH("LEFT")
-	g:SetPoint("CENTER",8,0)
+	g:SetPoint("CENTER", 8, 0)
 	g:SetText("?")
+	self.text = g
 
-	addon:SetScript("OnMouseDown",function()
-		if (IsShiftKeyDown()) then
-			self.isMoving = true
-			self:StartMoving();
-	 	end
-	end)
-	addon:SetScript("OnMouseUp",function()
-		if( self.isMoving ) then
-
-			self.isMoving = nil
-			self:StopMovingOrSizing()
-
-			addon:SaveLayout(ADDON_NAME)
-
+	self:SetScript("OnMouseDown", function(frame)
+		if IsShiftKeyDown() then
+			frame.isMoving = true
+			frame:StartMoving()
 		end
 	end)
-	addon:SetScript("OnLeave",function()
+	self:SetScript("OnMouseUp", function(frame)
+		if frame.isMoving then
+			frame.isMoving = nil
+			frame:StopMovingOrSizing()
+			self:SaveLayout(ADDON_NAME)
+		end
+	end)
+	self:SetScript("OnLeave", function()
 		xanEXPTooltip:Hide()
 	end)
 
-	addon:SetScript("OnEnter",function()
-
-		xanEXPTooltip:SetOwner(self, "ANCHOR_TOP")
-		xanEXPTooltip:SetPoint(self:GetTipAnchor(addon))
+	self:SetScript("OnEnter", function(frame)
+		xanEXPTooltip:SetOwner(frame, "ANCHOR_TOP")
+		xanEXPTooltip:SetPoint(self:GetTipAnchor(frame))
 		xanEXPTooltip:ClearLines()
 
 		xanEXPTooltip:AddLine(ADDON_NAME)
-		xanEXPTooltip:AddLine(L.TooltipDragInfo, 64/255, 224/255, 208/255)
+		xanEXPTooltip:AddLine(L.TooltipDragInfo, 64 / 255, 224 / 255, 208 / 255)
 		xanEXPTooltip:AddLine(" ")
 
 		local cur = UnitXP("player")
 		local maxXP = UnitXPMax("player")
-		local restXP = GetXPExhaustion() or 0
-		local remainXP = maxXP - (cur + restXP)
-		local toLevelXPPercent = math.floor((maxXP - cur) / maxXP * 100)
-
-        local sessionTime = GetTime() - starttime
-		local xpGainedSession = (cur - start)
-        local xpPerSecond = ceil(xpGainedSession / sessionTime)
-		local xpPerMinute = ceil(xpPerSecond * 60)
-        local xpPerHour = ceil(xpPerSecond * 3600)
-        local timeToLevel
-		if xpPerSecond <= 0 then
-			timeToLevel = L.TooltipTimeToLevelNone
-		else
-			timeToLevel = (maxXP - cur) / xpPerSecond
+		if maxXP <= 0 then
+			xanEXPTooltip:Show()
+			return
 		end
-		xanEXPTooltip:AddDoubleLine(L.TooltipEXP, cur.."/"..max, nil,nil,nil, 1,1,1)
-		xanEXPTooltip:AddDoubleLine(L.TooltipRest, string.format("%d%%", (GetXPExhaustion() or 0)/max*100), nil,nil,nil, 1,1,1)
-		xanEXPTooltip:AddDoubleLine(L.TooltipToNextLevel, maxXP-cur..(" ("..toLevelXPPercent.."%)"), nil,nil,nil, 1,1,1)
-		xanEXPTooltip:AddDoubleLine(L.TooltipXPPerSec, xpPerSecond, nil,nil,nil, 1,1,1)
-		xanEXPTooltip:AddDoubleLine(L.TooltipXPPerMinute, xpPerMinute, nil,nil,nil, 1,1,1)
-		xanEXPTooltip:AddDoubleLine(L.TooltipXPPerHour, xpPerHour, nil,nil,nil, 1,1,1)
-		xanEXPTooltip:AddDoubleLine(L.TooltipTimeToLevel, FormatTime(timeToLevel), nil,nil,nil, 1,1,1)
-		xanEXPTooltip:AddLine(string.format(L.TooltipSessionHoursPlayed, ceil(sessionTime/3600)), 1,1,1)
-		xanEXPTooltip:AddLine(xpGainedSession..L.TooltipSessionExpGained, 1,1,1)
-		xanEXPTooltip:AddLine(string.format(L.TooltipSessionLevelsGained, ceil(UnitLevel("player") + cur/max - startlevel)), 1,1,1)
+
+		local restXP = GetXPExhaustion() or 0
+		local toLevelXPPercent = floor((maxXP - cur) / maxXP * 100)
+
+		local sessionTime = GetTime() - session.startTime
+		local xpGainedSession = cur - session.startXP
+		local xpPerSecond = sessionTime > 0 and ceil(xpGainedSession / sessionTime) or 0
+		local xpPerMinute = xpPerSecond * 60
+		local xpPerHour = xpPerSecond * 3600
+		local timeToLevel = xpPerSecond > 0 and FormatTime((maxXP - cur) / xpPerSecond) or L.TooltipTimeToLevelNone
+
+		xanEXPTooltip:AddDoubleLine(L.TooltipEXP, cur .. "/" .. maxXP, nil, nil, nil, 1, 1, 1)
+		xanEXPTooltip:AddDoubleLine(L.TooltipRest, format("%d%%", (restXP / maxXP) * 100), nil, nil, nil, 1, 1, 1)
+		xanEXPTooltip:AddDoubleLine(L.TooltipToNextLevel, (maxXP - cur) .. (" (" .. toLevelXPPercent .. "%)"), nil, nil, nil, 1, 1, 1)
+		xanEXPTooltip:AddDoubleLine(L.TooltipXPPerSec, xpPerSecond, nil, nil, nil, 1, 1, 1)
+		xanEXPTooltip:AddDoubleLine(L.TooltipXPPerMinute, xpPerMinute, nil, nil, nil, 1, 1, 1)
+		xanEXPTooltip:AddDoubleLine(L.TooltipXPPerHour, xpPerHour, nil, nil, nil, 1, 1, 1)
+		xanEXPTooltip:AddDoubleLine(L.TooltipTimeToLevel, timeToLevel, nil, nil, nil, 1, 1, 1)
+		xanEXPTooltip:AddLine(format(L.TooltipSessionHoursPlayed, ceil(sessionTime / 3600)), 1, 1, 1)
+		xanEXPTooltip:AddLine(xpGainedSession .. L.TooltipSessionExpGained, 1, 1, 1)
+		local levelsGained = ceil(UnitLevel("player") + cur / maxXP - session.startLevel)
+		xanEXPTooltip:AddLine(format(L.TooltipSessionLevelsGained, levelsGained), 1, 1, 1)
 
 		xanEXPTooltip:Show()
 	end)
 
-
-	addon:Show();
+	self:Show()
 end
 
 function addon:SetAddonScale(value, bypass)
-	--fix this in case it's ever smaller than  
-	if value < 0.5 then value = 0.5 end --anything smaller and it would vanish 
-	if value > 5 then value = 5 end --WAY too big 
+	local db = self.db or GetDB()
+	self.db = db
 
-	XanEXP_DB.scale = value
+	value = ClampScale(value)
+	db.scale = value
 
 	if not bypass then
-		DEFAULT_CHAT_FRAME:AddMessage(string.format(L.SlashScaleSet, value))
+		DEFAULT_CHAT_FRAME:AddMessage(format(L.SlashScaleSet, value))
 	end
-	addon:SetScale(XanEXP_DB.scale)
+
+	if self:GetScale() ~= value then
+		self:SetScale(value)
+	end
 end
 
 function addon:SaveLayout(frame)
 	if type(frame) ~= "string" then return end
 	if not _G[frame] then return end
-	if not XanEXP_DB then XanEXP_DB = {} end
+	local db = self.db or GetDB()
+	self.db = db
 
-	local opt = XanEXP_DB[frame] or nil
-
-	if not opt then
-		XanEXP_DB[frame] = {
-			["point"] = "CENTER",
-			["relativePoint"] = "CENTER",
-			["xOfs"] = 0,
-			["yOfs"] = 0,
-		}
-		opt = XanEXP_DB[frame]
-		return
-	end
-
-	local point, relativeTo, relativePoint, xOfs, yOfs = _G[frame]:GetPoint()
+	local opt = EnsureLayout(db, frame)
+	local point, _, relativePoint, xOfs, yOfs = _G[frame]:GetPoint()
 	opt.point = point
 	opt.relativePoint = relativePoint
 	opt.xOfs = xOfs
@@ -274,37 +342,18 @@ end
 function addon:RestoreLayout(frame)
 	if type(frame) ~= "string" then return end
 	if not _G[frame] then return end
-	if not XanEXP_DB then XanEXP_DB = {} end
+	local db = self.db or GetDB()
+	self.db = db
 
-	local opt = XanEXP_DB[frame] or nil
-
-	if not opt then
-		XanEXP_DB[frame] = {
-			["point"] = "CENTER",
-			["relativePoint"] = "CENTER",
-			["xOfs"] = 0,
-			["yOfs"] = 0,
-		}
-		opt = XanEXP_DB[frame]
-	end
-
+	local opt = EnsureLayout(db, frame)
 	_G[frame]:ClearAllPoints()
 	_G[frame]:SetPoint(opt.point, UIParent, opt.relativePoint, opt.xOfs, opt.yOfs)
 end
 
 function addon:BackgroundToggle()
-	if XanEXP_DB.bgShown then
-		addon:SetBackdrop( {
-			bgFile = "Interface\\TutorialFrame\\TutorialFrameBackground";
-			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border";
-			tile = true; tileSize = 32; edgeSize = 16;
-			insets = { left = 5; right = 5; top = 5; bottom = 5; };
-		} );
-		addon:SetBackdropBorderColor(0.5, 0.5, 0.5);
-		addon:SetBackdropColor(0.5, 0.5, 0.5, 0.6)
-	else
-		addon:SetBackdrop(nil)
-	end
+	local db = self.db or GetDB()
+	self.db = db
+	ApplyBackdrop(self, db.bgShown)
 end
 
 ------------------------------
@@ -314,17 +363,17 @@ end
 function addon:PLAYER_XP_UPDATE()
 	local currentXP = UnitXP("player")
 	local maxXP = UnitXPMax("player")
-	local restXP = GetXPExhaustion() or 0
-	local remainXP = maxXP - (currentXP + restXP)
-	local toLevelXPPercent = math.floor((maxXP - currentXP) / maxXP * 100)
-
-	--getglobal("xanEXPText"):SetText(string.format("%d%%", currentXP/maxXP*100).." TNL: "..toLevelXPPercent.."%")
-	getglobal("xanEXPText"):SetText(string.format("%d%%", currentXP/maxXP*100))
+	if not self.text then return end
+	if maxXP <= 0 then
+		self.text:SetText("0%")
+		return
+	end
+	self.text:SetText(format("%d%%", floor(currentXP / maxXP * 100)))
 end
 
 function addon:PLAYER_LEVEL_UP()
-	start = start - max
-	max = UnitXPMax("player")
+	session.startXP = session.startXP - session.maxXP
+	session.maxXP = UnitXPMax("player")
 end
 
 ------------------------
@@ -332,9 +381,11 @@ end
 ------------------------
 
 function addon:GetTipAnchor(frame)
-	local x,y = frame:GetCenter()
+	local x, y = frame:GetCenter()
 	if not x or not y then return "TOPLEFT", "BOTTOMLEFT" end
-	local hhalf = (x > UIParent:GetWidth()*2/3) and "RIGHT" or (x < UIParent:GetWidth()/3) and "LEFT" or ""
-	local vhalf = (y > UIParent:GetHeight()/2) and "TOP" or "BOTTOM"
-	return vhalf..hhalf, frame, (vhalf == "TOP" and "BOTTOM" or "TOP")..hhalf
+	local uiWidth = UIParent:GetWidth()
+	local uiHeight = UIParent:GetHeight()
+	local hhalf = (x > uiWidth * 2 / 3) and "RIGHT" or (x < uiWidth / 3) and "LEFT" or ""
+	local vhalf = (y > uiHeight / 2) and "TOP" or "BOTTOM"
+	return vhalf .. hhalf, frame, (vhalf == "TOP" and "BOTTOM" or "TOP") .. hhalf
 end

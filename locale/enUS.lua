@@ -1,6 +1,6 @@
-local ADDON_NAME, addon = ...
+local ADDON_NAME, private = ...
 
-local L = LibStub("AceLocale-3.0"):NewLocale(ADDON_NAME, "enUS", true)
+local L = private:NewLocale("enUS", true)
 if not L then return end
 
 L.SlashBG = "bg"
@@ -15,7 +15,7 @@ L.SlashResetAlert = "xanEXP: Frame position has been reset!"
 L.SlashScale = "scale"
 L.SlashScaleSet = "xanEXP: scale has been set to [|cFF20ff20%s|r]"
 L.SlashScaleSetInvalid = "Scale invalid! Number must be from [0.5 - 5].  (0.5, 1, 3, 4.6, etc..)"
-L.SlashScaleInfo = "Set the scale of the LootRollMover loot frames (0.5 - 5)."
+L.SlashScaleInfo = "Set the scale of the xanEXP frame (0.5 - 5)."
 L.SlashScaleText = "xanEXP Frame Scale"
 
 L.Waiting = "Waiting..."

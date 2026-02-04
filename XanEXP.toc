@@ -1,4 +1,4 @@
-## Interface: 120000, 110207, 50503, 40402, 38000, 30405, 20504, 11508
+## Interface: 120000, 110207, 50503, 40402, 38000, 30405, 20505, 11508
 ## Title: xanEXP
 ## Notes: A small window that displays current xp and other xp information.
 ## Notes-zhCN:  一个显示当前经验和其他经验信息的小窗口。
@@ -11,11 +11,18 @@
 ## OptionalDeps: tekDebug
 ## SavedVariablesPerCharacter: XanEXP_DB
 
-libs\LibStub\LibStub.lua
-libs\AceLocale-3.0\AceLocale-3.0.xml
-
+locale\locales.lua
 locale\enUS.lua
+locale\deDE.lua
+locale\esES.lua
+locale\esMX.lua
+locale\frFR.lua
+locale\itIT.lua
+locale\koKR.lua
+locale\ptBR.lua
+locale\ruRU.lua
 locale\zhCN.lua
+locale\zhTW.lua
 
-xanEXP.lua
+XanEXP.lua
 config.lua
